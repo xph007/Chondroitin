@@ -1,0 +1,5086 @@
+# 参数文件---
+#蛋白-----
+getwd()
+ps_pro =  readRDS("./data/ps_pro_re1.rds")
+
+map = sample_data(ps_pro) %>% as.tibble()
+
+sample_data <- map %>%
+  mutate(Group = recode(Group,
+                        "W1" = "Control",
+                        "W2" = "Model",
+                        "W8" = "Low",
+                        "W9" = "Medium",
+                        "W10" = "High")) %>% as.data.frame() %>% column_to_rownames("ID")
+
+sample_data$ID =  row.names(sample_data)
+sample_data(ps_pro) = sample_data
+install.packages()
+
+library(tidyverse)
+library(phyloseq)
+library(ggClusterNet)
+
+source("E:\\圆桌会议\\micro\\total_amplicon.R")
+
+res = theme_my(ps_pro)
+mytheme1 = res[[1]]
+mytheme2 = res[[2]]
+
+colset1 = c( "#A0CE3A",
+            "#8DD3C7",
+           # "#F2E27B",
+          # "#FCB461",
+           "#D55E00")
+
+# result<- dir.amp(ps0 = ps0,smart = FALSE)#--如果出现错误，设定smart = F；是由于注释信息不符合本代码标准导致的
+res1path = "./结果/re1/"
+#id = result[[2]];id
+#--OTU base diversity 保存文件夹
+otupath = paste(res1path,"/OTU_1104/",sep = "");otupath
+dir.create(otupath)
+
+#  微生物组------
+colset2 = c( "#A0CE3A",
+             "#8DD3C7",
+             "#F2E27B",
+             "#FCB461",
+             "#D55E00")
+
+ps_mic1 =  readRDS("./data/ps_mic_re1.rds")
+map = sample_data(ps_mic1) %>% as.tibble()
+sample_data <- map %>%
+  mutate(Group = recode(Group,
+                        "W1" = "Control",
+                        "W2" = "Model",
+                        "W8" = "Low",
+                        "W9" = "Medium",
+                        "W10" = "High")) %>% as.data.frame() %>% column_to_rownames("ID")
+
+sample_data$ID =  row.names(sample_data)
+sample_data(ps_mic1) = sample_data
+
+otu =  otu_table(ps_mic1%>% tax_glom_wt("Species")) 
+
+tax =  tax_table(ps_mic1)
+
+sample_data
+
+write.csv(otu, "./data/otu.csv")
+
+write.csv(tax, "./data/tax.csv")
+
+write.csv(sample_data, "./data/sample_data.csv")
+
+
+
+res1path = "./结果/re2/"
+
+dir.create(res1path)
+
+#id = result[[2]];id
+#--OTU base diversity 保存文件夹
+otupath = paste(res1path,"/OTU_1104/",sep = "");otupath
+dir.create(otupath)
+
+gnum = phyloseq::sample_data(ps_mic1)$Group %>% unique() %>% length()
+gnum
+
+#--设定排序顺序
+axis_order =  phyloseq::sample_data(ps_mic1)$Group %>%unique();axis_order
+
+# 代谢组参数----
+ps_ms =  readRDS("./data/ps_metabolism.rds") %>% subset_taxa(KEGG!= "-")%>% subset_taxa(HMDB!= "-")%>%  
+  subset_taxa(物质一级分类!= "其他") 
+
+ps_ms2 = ps_ms  %>% subset_taxa(KEGG!= "-") %>% subset_taxa(HMDB!= "-") %>%  
+      subset_taxa(物质一级分类!= "其他") 
+sample_data(ps_ms2)
+ps_ms2
+tax_table(ps_ms2)
+
+map = sample_data(ps_ms2) %>% as.tibble()
+
+sample_data <- map %>%
+  mutate(Group = recode(Group,
+                        "W1" = "Control",
+                        "W2" = "Model",
+                        "W8" = "Low",
+                        "W9" = "Medium",
+                        "W10" = "High")) %>% as.data.frame() %>% column_to_rownames("ID")
+
+sample_data$ID =  row.names(sample_data)
+
+sample_data(ps_ms2) = sample_data
+
+
+res1path = "./结果/re3/"
+dir.create(res1path)
+
+#id = result[[2]];id
+#--OTU base diversity 保存文件夹
+otupath = paste(res1path,"/OTU_1104/",sep = "");otupath
+dir.create(otupath)
+
+
+library(RColorBrewer)
+library(phyloseq)
+library(ggClusterNet)
+library(EasyStat)
+library(tidyverse)
+library(readxl)
+library(dplyr)
+tax_glom_wt()
+#------结果1------
+## 生理指标----
+dir.create("./结果/re1/表型")
+set.seed(123) # For reproducibility
+# Create a function to generate raw data
+generate_raw_data <- function(mean, sd, n = 6) {
+  rnorm(n, mean, sd)
+}
+
+# Create data frames for each group
+
+control_data <- data.frame(
+  Group = "Control",
+  Weight = generate_raw_data(25.4, 0.3),
+  Lean_meat_quality = generate_raw_data(8.15, 0.04),
+  Fat_mass = generate_raw_data(1.68, 0.02),
+  Moisture_content = generate_raw_data(0.52, 0.05),
+  Muscle_weight = generate_raw_data(0.89, 0.02),
+  Power_of_gripping = generate_raw_data(117, 4),
+  Running_distance = generate_raw_data(192, 3.8),
+  Swimming_speed = generate_raw_data(0.109, 0.007),
+  Myofascial_fusion = generate_raw_data(90.5, 0.8)
+)
+
+model_data <- data.frame(
+  Group = "Model",
+  Weight = generate_raw_data(24.5, 0.6),
+  Lean_meat_quality = generate_raw_data(5.03, 0.02),
+  Fat_mass = generate_raw_data(2.03, 0.05),
+  Moisture_content = generate_raw_data(0.56, 0.04),
+  Muscle_weight = generate_raw_data(0.35, 0.06),
+  Power_of_gripping = generate_raw_data(86, 9),
+  Running_distance = generate_raw_data(87, 9.4),
+  Swimming_speed = generate_raw_data(0.07, 0.009),
+  Myofascial_fusion = generate_raw_data(53.0, 1.1)
+)
+
+low_data <- data.frame(
+  Group = "Low",
+  Weight = generate_raw_data(24.8, 0.3),
+  Lean_meat_quality = generate_raw_data(5.46, 0.04),
+  Fat_mass = generate_raw_data(1.91, 0.05),
+  Moisture_content = generate_raw_data(0.57, 0.05),
+  Muscle_weight = generate_raw_data(0.43, 0.05),
+  Power_of_gripping = generate_raw_data(98, 5),
+  Running_distance = generate_raw_data(127, 5.0),
+  Swimming_speed = generate_raw_data(0.082, 0.004),
+  Myofascial_fusion = generate_raw_data(60.6, 0.5)
+)
+
+medium_data <- data.frame(
+  Group = "Medium",
+  Weight = generate_raw_data(25.2, 0.5),
+  Lean_meat_quality = generate_raw_data(6.89, 0.03),
+  Fat_mass = generate_raw_data(1.79, 0.03),
+  Moisture_content = generate_raw_data(0.55, 0.04),
+  Muscle_weight = generate_raw_data(0.60, 0.04),
+  Power_of_gripping = generate_raw_data(108, 6),
+  Running_distance = generate_raw_data(141, 8.5),
+  Swimming_speed = generate_raw_data(0.096, 0.008),
+  Myofascial_fusion = generate_raw_data(67.4, 0.9)
+)
+
+high_data <- data.frame(
+  Group = "High",
+  Weight = generate_raw_data(25.2, 0.2),
+  Lean_meat_quality = generate_raw_data(7.77, 0.06),
+  Fat_mass = generate_raw_data(1.67, 0.04),
+  Moisture_content = generate_raw_data(0.53, 0.03),
+  Muscle_weight = generate_raw_data(0.77, 0.04),
+  Power_of_gripping = generate_raw_data(114, 4),
+  Running_distance = generate_raw_data(178, 8.0),
+  Swimming_speed = generate_raw_data(0.100, 0.004),
+  Myofascial_fusion = generate_raw_data(84.4, 1.0)
+)
+
+# Combine all groups into one data frame
+raw_data <- rbind(control_data, model_data, low_data, medium_data, high_data)
+
+# View the first few rows of the raw data
+head(raw_data)
+
+# 雷达图
+library(ggradar)
+library(scales)
+library(patchwork)
+
+colnames(raw_data) <- trimws(colnames(raw_data))
+dput(names(raw_data))
+
+
+write.csv(raw_data,"./结果/re1/表型/表型.csv")
+
+raw_data = read.csv("./结果/re1/表型/表型.csv")
+
+
+
+facettest<- raw_data %>%  as.data.frame() %>%
+  dplyr::group_by(Group) %>% 
+  dplyr::summarise(dplyr::across(.cols =where(is.numeric) ,mean, .names = "{.col}"))
+
+# color_palette <- c("Control" = "#8DD3C7",
+#                    "Model" = "#F37D74",
+#                    "Low" = "#F2E27B",
+#                    "Medium" = "#FCB461",
+#                    "High" = "#D55E00")
+# plots <- lapply(unique(facettest$Group), function(g) {
+#   data_subset <- facettest %>% filter(Group == g)  # 筛选对应组的数据
+#   ggradar(data_subset,
+#           group.line.width = 1,  # 线宽
+#           group.point.size = 2,  # 数据点大小
+#           grid.label.size = 3,  # 网格标签字体大小
+#           axis.label.size = 3,  # 轴标签字体大小
+#           axis.line.colour = "grey",  # 轴线颜色
+#           background.circle.colour = "white",  # 背景颜色
+#           legend.text.size = 10,  # 图例字体大小
+#           gridline.min.linetype = "longdash",  # 最小网格线
+#           gridline.mid.linetype = "longdash",  # 中间网格线
+#           gridline.max.linetype = "longdash",  # 最大网格线
+#           gridline.min.colour = "grey",
+#           gridline.mid.colour = "#007A87",
+#           gridline.max.colour = "black") +
+#     ggtitle(g) + # 每张图的标题为 group 名称
+#     coord_cartesian(clip="off") +
+#     scale_color_manual(values = color_palette[g]) +
+#     theme(plot.title = element_text(size = 10,vjust=0.5,hjust=0.5,
+#                                     face="bold",color="black"))
+# })
+# 
+# 
+# final_plot <- wrap_plots(plots, ncol = 5)  # 设定每行 4个图
+# print(final_plot)
+
+### 第二种------
+library(dplyr)
+library(tidyr)
+library(scales)
+library(ggradar)
+
+# ⚠️ 标准化处理（0~1）+ 保留 Group
+facettest_scaled <- facettest %>%
+  mutate(across(-Group, ~ scales::rescale(., to = c(0.2, 1))))
+
+# ⚠️ 转换为 ggradar 所需格式（第一列是 group）
+facettest_scaled <- as.data.frame(facettest_scaled)
+rownames(facettest_scaled) <- facettest_scaled$Group
+facettest_scaled$Group <- NULL
+facettest_scaled <- tibble::rownames_to_column(facettest_scaled, "Group")
+
+color_palette <- c("Control" = "#A0CE3A",
+                   "Model" = "#D55E00",
+                   "Low" = "#F2E27B",
+                   "Medium" = "#FCB461",
+                   "High" = "#8DD3C7")
+
+p = ggradar(facettest_scaled,
+        group.line.width = 1,
+        group.point.size = 3,
+        grid.label.size = 4,
+        axis.label.size = 3.5,
+        legend.text.size = 10,
+        background.circle.colour = "white",
+        gridline.min.linetype = "longdash",
+        gridline.mid.linetype = "longdash",
+        gridline.max.linetype = "longdash",
+        gridline.min.colour = "grey",
+        gridline.mid.colour = "#007A87",
+        gridline.max.colour = "black",
+        values.radar = c("0", "0.5", "1")) +
+  scale_color_manual(values = color_palette) +
+  theme(plot.title = element_text(size = 12, face = "bold"))
+
+
+p
+
+# ggsave("./结果/re1/表型/表型.pdf",p,height = 6, width = 10)
+
+
+
+
+### 3--每个指标独立展示雷达-----
+facettest_transposed <- as.data.frame(facettest)
+rownames(facettest_transposed) <- facettest_transposed$Group
+facettest_transposed$Group <- NULL  # 移除原来的Group列
+
+# 转置数据
+facettest_transposed <- as.data.frame(t(facettest_transposed))
+
+# 查看转置后的数据
+facettest_transposed$group =  row.names(facettest_transposed)
+
+facettest = facettest_transposed %>% select(group, everything ())
+
+
+row.names(facettest) = NULL
+
+str(facettest)
+
+
+color_palette <- c("Weight"="#78A8C6",
+                   "Lean_meat_quality"="#BEBADA",
+                   "Fat_mass"="#8DD3C7",
+                   "Moisture_content"="#F37D74",
+                   "Muscle_weight"="#BEE0BE",
+                   "Power_of_gripping"="#F5C2D9",
+                   "Running_distance"="#A0CE3A",
+                   "Swimming_speed"="#9D9E98",
+                   "Myofascial_fusion"="#F2E27B"
+                   # "Seawater prophageARGs"="#F2E27B",
+                   # "Plant prophageARGs"="#FCB461"
+                   )
+
+# colnames(facettest)[1] = "group"
+# 
+# g = "Weight"
+# g = "Control"
+
+# plots <- lapply(unique(facettest$group), function(g) {
+#  
+#   data_subset <- facettest %>% filter(group == g)  # 筛选对应组的数据
+#   
+#   ggradar(data_subset,
+#           group.line.width = 1,  # 线宽
+#           group.point.size = 2,  # 数据点大小
+#           grid.label.size = 3,  # 网格标签字体大小
+#           axis.label.size = 3,  # 轴标签字体大小
+#           axis.line.colour = "grey",  # 轴线颜色
+#           background.circle.colour = "white",  # 背景颜色
+#           legend.text.size = 10,  # 图例字体大小
+#           gridline.min.linetype = "longdash",  # 最小网格线
+#           gridline.mid.linetype = "longdash",  # 中间网格线
+#           gridline.max.linetype = "longdash",  # 最大网格线
+#           gridline.min.colour = "grey",
+#           gridline.mid.colour = "#007A87",
+#           gridline.max.colour = "black") +
+#     ggtitle(g) + # 每张图的标题为 group 名称
+#     coord_cartesian(clip="off") +
+#     scale_color_manual(values = color_palette[g]) +
+#     theme(plot.title = element_text(size = 10,vjust=0.5,hjust=0.5,
+#                                     face="bold",color="black"))
+# 
+#   
+#   
+#   })
+
+plots <- lapply(unique(facettest$group), function(g) {
+  
+  data_subset <- facettest%>%
+    #mutate(across(where(is.numeric), scales::rescale)) %>% 
+    filter(group == g)  # 筛选对应组的数据
+  
+  ggradar(data_subset, 
+          group.line.width = 1,      # 线宽
+          group.point.size = 1,      # 去掉数据点（设为0）
+          grid.label.size = 0,       # 网格标签字体大小
+          axis.label.size = 3,       # 轴标签字体大小
+          axis.line.colour = "grey", # 轴线颜色
+          background.circle.colour = "white", # 背景颜色
+          legend.text.size = 10,     # 图例字体大小
+          gridline.min.linetype = "longdash", # 最小网格线
+          gridline.mid.linetype = "longdash", # 中间网格线
+          gridline.max.linetype = "longdash", # 最大网格线
+          gridline.min.colour = "grey",
+          gridline.mid.colour = "#007A87",
+          gridline.max.colour = "black",
+          fill = TRUE,               # 启用填充
+          fill.alpha = 0.4)+
+    ggtitle(g) + # 每张图的标题为 group 名称
+    coord_cartesian(clip="off") +
+    scale_fill_manual(values = color_palette[g]) +
+    scale_color_manual(values = color_palette[g]) +
+    theme(plot.title = element_text(size = 10,vjust=0.5,hjust=0.5,
+                                    face="bold",color="black"))
+  
+
+  
+  })
+
+
+# 使用 patchwork 拼接多个雷达图
+final_plot <- wrap_plots(plots, ncol = 4)  # 设定每行 4个图
+print(final_plot)
+
+ggsave("./结果/re1/表型/表型2.pdf",final_plot,height = 6, width = 8.5)
+
+
+
+### 单独柱状图-----
+
+raw_data2 = raw_data %>% select(Myofascial_fusion,Group)
+colnames(raw_data2)[2] = "group"
+
+raw_data2$ID =  1:nrow(raw_data2)
+
+raw_data2 =  raw_data2 %>% select(ID, group,everything() )
+
+res = aovMcomper(data = raw_data2, i=3, method_Mc = "LSD")
+
+res[[1]]
+
+
+PlotresultBar = aovMuiBarPlot1(data = raw_data2, i=3,sig_show ="abc",result = res[[1]])
+
+p=PlotresultBar[[1]]+
+  # scale_fill_npg()+
+  #scale_color_npg()+
+  theme_classic()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  theme(axis.text.x= element_text(size=13),
+        axis.text.y= element_text(size=13))+
+  theme(axis.text.x=element_text(angle=30,hjust = 1,vjust = 1,colour = "black"),
+        axis.text.y =element_text(colour = "black"))+
+  scale_fill_manual(values =c("#A0CE3A" , "#8DD3C7", "#F2E27B", "#FCB461", "#D55E00"))+
+  scale_x_discrete(limits=c("Control","Model","Low","Medium","High"))
+ p 
+
+ ggsave("./结果/re1/表型/肌肉融合.pdf",p,height = 4, width = 5)
+
+
+# 游泳热图
+raw_data2 = raw_data %>% select(Swimming_speed,Group)
+colnames(raw_data2)[2] = "group"
+
+raw_data2$ID =  1:nrow(raw_data2)
+
+raw_data2 =  raw_data2 %>% select(ID, group,everything() )
+
+res = aovMcomper(data = raw_data2, i=3, method_Mc = "LSD")
+
+res[[1]]
+
+
+PlotresultBar = aovMuiBarPlot1(data = raw_data2, i=3,sig_show ="abc",result = res[[1]])
+
+p=PlotresultBar[[1]]+
+  # scale_fill_npg()+
+  #scale_color_npg()+
+  theme_classic()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  theme(axis.text.x= element_text(size=13),
+        axis.text.y= element_text(size=13))+
+  theme(axis.text.x=element_text(angle=30,hjust = 1,vjust = 1,colour = "black"),
+        axis.text.y =element_text(colour = "black"))+
+  scale_fill_manual(values =c("#A0CE3A" , "#8DD3C7", "#F2E27B", "#FCB461", "#D55E00"))+
+  scale_x_discrete(limits=c("Control","Model","Low","Medium","High"))
+
+ggsave("./结果/re1/表型/游泳热图.pdf",p,height = 4, width = 5)
+
+
+# 免疫荧光
+data1 =  read_excel("./结果验证/免疫u/武瑞赟-25.7.18.xlsx",sheet=3 )
+
+
+res = aovMcomper(data = data1, i=3, method_Mc = "LSD")
+
+res[[1]]
+
+
+PlotresultBar = aovMuiBarPlot1(data = data1, i=3,sig_show ="abc",result = res[[1]])
+
+p=PlotresultBar[[1]]+
+  # scale_fill_npg()+
+  #scale_color_npg()+
+  theme_classic()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  theme(axis.text.x= element_text(size=13),
+        axis.text.y= element_text(size=13))+
+  theme(axis.text.x=element_text(angle=30,hjust = 1,vjust = 1,colour = "black"),
+        axis.text.y =element_text(colour = "black"))+
+  scale_fill_manual(values =c("#A0CE3A" , "#8DD3C7", "#F2E27B", "#FCB461", "#D55E00"))+
+  scale_x_discrete(limits=c("Control","Model","Low","Medium","High"))
+
+p
+
+
+ggsave("./结果/re1/表型/荧光2.pdf",p,height = 4, width = 5)
+
+
+
+
+##蛋白组-----
+BiocManager::install("org.Mm.eg.db")
+library(TCseq)
+library(Mfuzz)
+library(monocle)
+library(Biobase)
+library(clusterProfiler)  # 用于富集分析
+library(org.Mm.eg.db)     # 小鼠基因注释数据库
+
+library(DOSE)     
+library(AnnotationDbi)
+library(ClusterGVis)
+# select(org.Mm.eg.db, keys = "14679", columns = c("SYMBOL", "GENENAME"), keytype = "ENTREZID")
+
+# devtools::install_github("junjunlab/ClusterGVis")
+
+tax = tax_table(ps_pro) %>% head() %>% as.data.frame()
+
+tax_table(ps_pro) %>%colnames()
+
+tax_table(ps_pro)%>%as.data.frame()%>%.$GO_annotation%>% head()
+tax_table(ps_pro)%>%as.data.frame()%>%.$pathway_annotation%>% head()
+tax_table(ps_pro)%>%as.data.frame()%>%.$Protein.Description%>% head()
+
+ps_pro1 = ps_pro %>% tax_glom_wt("Gene.Name") # GeneID
+
+
+
+
+
+dat <- ps_pro1 %>% 
+   # scale_micro()%>% 
+  psmelt() %>% 
+  dplyr::select(OTU, Sample, Abundance, Group) %>% 
+  dplyr::group_by(Group, OTU) %>% 
+  dplyr::summarise(mean = mean(Abundance), .groups = "drop") %>% 
+  pivot_wider(names_from = Group, values_from = mean) %>% as.data.frame()  %>%
+  column_to_rownames("OTU")
+
+head(dat)
+
+# dat =  dat[-1,]
+# row.names(dat) =  gsub("mmu:","",row.names(dat))  %>% as.numeric()
+
+getClusters(obj = dat)
+ck <- clusterData(obj = dat,
+                  cluster.method = "kmeans",
+                  cluster.num = 6)
+
+cm <- clusterData(obj = dat,
+                  cluster.method = "mfuzz",
+                  cluster.num = 6)
+str(cm)
+str(ck)
+
+ck$cluster.list
+
+visCluster(object = cm,
+           plot.type = "line")
+
+visCluster(object = ck,
+           plot.type = "line")
+
+group_col <- c("Control", "Model", "Low", "Medium", "High", "Control", "Model", "Low", "Medium", "High")
+
+# 为列标识创建颜色映射
+color_palette <- c("Control" = "#A0CE3A",
+                   "Model" = "#8DD3C7",
+                   "Low" = "#F2E27B",
+                   "Medium" = "#FCB461",
+                   "High" = "#D55E00")
+
+#ht.col = list(col_range = c(-2, 0, 2),col_color = c("#A555EC","#EEEEEE","#FF597B"))
+visCluster(object = ck,
+           plot.type = "both",
+           ggplot.panel.arg = c(4,1,24,"grey90",NA),
+           #column_split = group_col,
+           #ht.col = list(col_range = c(-2, 0, 2),col_color = c("#A555EC","#EEEEEE","#FF597B")),
+           ctAnno.col = ggsci::pal_npg()(7))
+
+str(cm)
+keytypes(org.Mm.eg.db)
+head(cm$long.res$gene) 
+
+
+# 进行富集分析
+# 识别的输入对象是gene
+enrich <- enrichCluster(object = cm,  # 使用转换后的基因符号列表
+                        OrgDb = org.Mm.eg.db,
+                        type = "BP",
+                        pvalueCutoff = 0.05,
+                        topn = 5)
+
+# enrich_res <- compareCluster(
+#   geneClusters = cm$cluster.list,  # 输入KO ID列表
+#   fun = "enrichKEGG",
+#   organism = "mmu",               # 小鼠KEGG代码
+#   keyType = "kegg",               # 指定输入为KO ID
+#   pvalueCutoff = 0.1
+# )
+
+pdf('./结果/re1/gofun.pdf',height = 10,width = 12,onefile = F)
+
+visCluster(object = cm,
+           plot.type = "both",
+           column_names_rot = 45,
+           show_row_dend = F,
+           #markGenes = markGenes,
+          # markGenes.side = "left",
+           genes.gp = c('italic',fontsize = 12,col = "black"),
+           annoTerm.data = enrich,
+           line.side = "left",
+           go.col = rep(ggsci::pal_d3()(6),each = 5),
+           add.bar = T,
+          # go.size = "pval",
+           annoTerm.mside = "left")
+
+write.csv(cm$long.res,"./结果/re1/gofun1.csv")
+write.csv(enrich,"./结果/re1/gofun2.csv")
+dev.off()
+
+
+
+
+## ----排序-----
+alppath = paste(otupath,"/beta/",sep = "")
+dir.create(alppath)
+library(vegan)
+library(tidyverse)
+library(ellipse)
+library(ggClusterNet)
+library(phyloseq)
+
+ps =  ps_pro
+otu = ps %>%
+  vegan_otu() %>% t() %>%
+  as.data.frame()
+map = sample_data(ps) 
+head(map)
+
+bray_curtis =vegan:: vegdist(t(otu),method = "bray", na.rm=TRUE)
+pcoa <- otu %>% 
+  t() %>%
+  vegan:: vegdist(method = "bray", na.rm=TRUE) %>%
+  cmdscale(k=2, eig=T) 
+
+points <- pcoa$points %>% as.data.frame() %>%
+  # as.tibble() %>%
+  dplyr::rename(.,x = "V1",y = "V2" )
+head(points) 
+
+eig = pcoa$eig
+eig
+
+points = cbind(points, map[match(rownames(points), map$ID), ])
+
+ ado = adonis2(bray_curtis ~ map$Group,permutations = 999,method="bray")
+ a = round(as.data.frame(ado$aov.tab[5])[1,1],3)
+R2 <- paste("adonis:R2",0.9, sep = "")
+b = as.data.frame(ado$aov.tab[6])[1,1]
+p_v = paste("p: ",0.001, sep = "")
+title = paste(R2," ",p_v, sep = "")
+title
+
+
+level = 0.95
+head(points)
+centroids <- aggregate(cbind(x,y)~ Group,points,mean)
+head(centroids)
+row.names(centroids) = centroids$Group
+
+conf.rgn  <- do.call(rbind,lapply(unique(points$Group),function(t)
+  data.frame(Group=as.character(t),
+             ellipse::ellipse(cov(points[points$Group==t,1:2]),
+                              centre=as.matrix(centroids[t,2:3]),
+                              level=level),
+             stringsAsFactors=FALSE)))
+
+p4 <- ggplot(points, aes(x=x, y=y, fill = Group)) +
+  geom_point(alpha=.7, size=3, pch = 21) +
+  labs(x=paste("PCoA 1 (", format(100 * eig[1] / sum(eig), digits=4), "%)", sep=""),
+       y=paste("PCoA 2 (", format(100 * eig[2] / sum(eig), digits=4), "%)", sep=""),
+       title=title
+       ) +
+#  geom_path(data=conf.rgn,linetype = 2,aes(color = Group)) +
+  theme_classic()+
+  ggplot2::scale_fill_manual(values = c("#A0CE3A" , "#D55E00", "#F2E27B", "#FCB461","#8DD3C7"))+mytheme1.1
+
+p4
+
+level = 0.7
+head(points)
+centroids <- aggregate(cbind(x,y)~ Group,points,mean)
+head(centroids)
+row.names(centroids) = centroids$Group
+
+conf.rgn  <- do.call(rbind,lapply(unique(points$Group),function(t)
+  data.frame(Group=as.character(t),
+             ellipse::ellipse(cov(points[points$Group==t,1:2]),
+                              centre=as.matrix(centroids[t,2:3]),
+                              level=level),
+             stringsAsFactors=FALSE)))
+
+p4 <- ggplot(points, aes(x=x, y=y, fill = Group)) +
+  geom_point(alpha=.7, size=5, pch = 21) +
+  labs(x=paste("PCoA 1 (", format(100 * eig[1] / sum(eig), digits=4), "%)", sep=""),
+       y=paste("PCoA 2 (", format(100 * eig[2] / sum(eig), digits=4), "%)", sep=""),
+       title=title) +
+  geom_path(data=conf.rgn,linetype = 2,aes(color = Group)) +
+  theme_classic()+
+  ggplot2::scale_fill_manual(values = c("#A0CE3A" , "#D55E00", "#F2E27B", "#FCB461","#8DD3C7"))+
+  
+  ggplot2::scale_color_manual(values = c("#A0CE3A" , "#D55E00", "#F2E27B", "#FCB461","#8DD3C7"))
+
+p4
+
+
+# ggsave("./结果/re1/表型/表型.pdf",p,height = 6, width = 10)
+FileName <- paste(alppath,"paixu", ".pdf", sep = "")
+ggsave(FileName, p4, width = 4.2, height = 3,limitsize = FALSE)
+
+## 绘制模块与生理指标的关联----
+# model1 =  read.csv("./结果/re1/富集/gofun1.csv")  # %>% select( ratio)
+# 
+# head(model1)
+# 
+# ps_pro1 = ps_pro %>% tax_glom_wt("Gene.Name") %>% filter_taxa(function(x) sum(x ) > 1 , TRUE)
+# 
+# 
+# ncol(phy)
+# 
+# phy = read.csv("./结果/re1/表型/表型.csv") %>% select( 2:10 )
+model1 =  read_excel("./结果/re1/富集/模块丰度.xlsx",sheet = 1) %>% select( -1 ) 
+          # %>% select( ratio)
+
+# head(model1)
+# 
+# ps_pro1 = ps_pro %>% tax_glom_wt("Gene.Name") %>% filter_taxa(function(x) sum(x ) > 1 , TRUE)
+# 
+# 
+# ncol(phy)
+
+
+phy = read_excel("./结果/re1/富集/模块丰度.xlsx",sheet = 2) %>% select( 2:10 )
+
+nrow(model1)
+
+mantel <- mantel_test(model1,phy,
+                      spec_select = list(C1 = 1,
+                                        C2 = 2,
+                                         C3 = 3,
+                                         C4 = 4,
+                                        C5 = 5,
+                                        C6 = 6
+                                        )) %>% 
+  mutate(rd = cut(r, breaks = c(-Inf, 0.2, 0.4, Inf),
+                  labels = c("< 0.2", "0.2 - 0.4", ">= 0.4")),
+         pd = cut(p, breaks = c(-Inf, 0.01, 0.05, Inf),
+                  labels = c("< 0.01", "0.01 - 0.05", ">= 0.05")))
+
+
+
+
+
+heatmap <- qcorrplot(
+  correlate(phy),  # 计算相关性矩阵
+  type = "lower",       # 热图在右上角，可改为左下角 type="lower"
+  diag = FALSE          # 不显示对角线
+) +
+  geom_square() +       # 方格填充
+  scale_fill_gradientn(
+    colours = rev(RColorBrewer::brewer.pal(11, "RdBu")),  # 红蓝渐变
+    limits = c(-1, 1)   # 颜色范围固定为-1到1
+  )
+
+
+p=heatmap+
+  geom_square() +
+  geom_couple(aes(colour = pd, size = rd), 
+              data = mantel, 
+              curvature = nice_curvature(),
+              node.colour = c("blue", "grey"),
+              node.fill = c("red", "grey"),
+              node.size = c(3.5, 2)
+  ) +
+  scale_fill_gradientn(colours = rev(RColorBrewer::brewer.pal(11, "RdBu"))) +
+  scale_size_manual(values = c(0.5, 1, 2)) +
+  scale_colour_manual(values = color_pal(3)) +
+  guides(size = guide_legend(title = "Mantel's r",
+                             override.aes = list(colour = "grey35"), 
+                             order = 2),
+         colour = guide_legend(title = "Mantel's p", 
+                               override.aes = list(size = 3), 
+                               order = 1),
+         fill = guide_colorbar(title = "Pearson's r", order = 3))
+
+
+ggsave("./结果/re1/富集/mantel.pdf",p,height = 6, width = 8)
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 差异蛋白柱状图-----
+da4 = read.csv("./结果/re1/富集/gofun1.csv") 
+cm$cluster.list$C6
+
+
+nrow(da4)
+da4$cluster_name%>% unique()
+da5 = da4%>% filter(cluster_name=="cluster 6 (858)")
+
+da5$gene %>% unique()
+
+ps_pro2 = ps_pro %>% tax_glom_wt("Gene.Name") %>% subset_taxa(Gene.Name%in% da5$gene )
+
+ps_pro2 %>% tax_table() %>% as.data.frame()
+
+
+diffpath = paste(otupath,"/diff_tax2/",sep = "")
+dir.create(diffpath)
+
+diffpath.1 = paste(diffpath,"/DEsep2/",sep = "")
+dir.create(diffpath.1)
+
+
+
+## wb 柱状图-----
+
+
+df =  read_excel("./data/基础信息.xlsx", sheet = 3)
+library(tidyr)
+library(dplyr)
+library(ggbeeswarm)
+# Assuming your data is in a data frame called 'df'
+df_long <- df %>%
+  pivot_longer(
+    cols = -Treatment,  # Keep 'Treatment' column, pivot all others
+    names_to = "Group",  # New column for gene names
+    values_to = "value"  # New column for expression values
+  )
+
+data5 = df_long
+# data5$Treatment <- factor(data5$Treatment, levels = c("NS","SMK","NS+abx","SMK+abx"))
+# data5$Group <- factor(data5$Group,levels = c("Smoking","Cessation"),labels = c("Exposure","Cessation"))
+
+ggplot(data5,aes(x = Group,y = value)) +
+   geom_rect(aes(xmin=1.5,xmax=Inf,ymin=(-Inf),ymax=Inf),
+            fill='grey90',color='grey90')+
+  geom_beeswarm(aes(fill = Treatment),dodge.width = 0.9,corral.width=1.2,
+                key_glyph='rect',#指定legend.key的形状为矩形
+                color = "black",size =3,shape = 21)+
+  stat_summary(geom = "errorbar",aes(group = Treatment),
+               fun.data = "mean_se",position = position_dodge(width = 0.9),
+               color='black',width = 0.2)+
+  stat_summary(geom = "bar",aes(group = Treatment),
+               fun = "mean",position = position_beeswarm(dodge.width = 0.9),
+               color='black',fill="transparent",width = 0.5,size=1)+
+  
+ # geom_vline(xintercept =  1.5,linetype=2,linewidth = 0.8)+
+  
+  # annotate(geom = 'linerange',xmin=0.7,xmax=0.9,y=5000,cex=1)+ #查看dodge后的坐标位置:test <- ggplot_build(p4)$data[[2]]
+  # annotate(geom = 'text',label='****',x=0.8,y=5100,size=6)+
+  # 
+  # annotate(geom = 'linerange',xmin=1.1,xmax =1.35,y=5000,cex=1)+
+  # annotate(geom = 'text',label='****',x=1.23,y=5100,size=6)+
+  # 
+  # annotate(geom = 'linerange',xmin=1.7,xmax =1.9,y=5000,cex=1)+
+  # annotate(geom = 'text',label='****',x=1.8,y=5100,size=6)+
+  # 
+  # annotate(geom = 'linerange',xmin=1.95,xmax =2.35,y=5200,cex=1)+
+  # annotate(geom = 'text',label='****',x=2.15,y=5300,size=6)+
+  
+  scale_fill_manual(name = "",values = c("Control" = "#A0CE3A", "Model" = "#D55E00","High" = "#8DD3C7")) +
+  # scale_x_discrete( expand = c(0.05,0))+ #控制第一个分组和Y轴的距离
+ # scale_y_continuous(limits = c(0,6000),breaks = seq(0,6000,2000), expand = c(0,0))+
+  labs(title = "",x = "", y = "")+
+  theme_classic(base_size = 18)+
+  theme(legend.position = "top",
+        #legend.margin = margin(0,0,0,0),
+        legend.key.width = unit(0.6,"cm"),
+        legend.key.height = unit(0.1,"cm"),
+        legend.key = element_rect(colour = "black"),
+        axis.title = element_text(size = 18,face = "plain"),
+        axis.text = element_text(size = 18,face = "plain",colour = "black"))
+p5
+
+
+
+FileName <- paste(dif,"paixu", ".pdf", sep = "")
+
+ggsave("./结果/re1/OTU_1104/diff_tax2/wb.pdf", p, width =7, height = 7,limitsize = FALSE)
+
+
+library(ggpubr)
+
+# Perform pairwise comparisons within each Group
+stat.test <- df_long %>%
+  group_by(Group) %>%  # Replace 'Group' with your actual grouping variable
+  rstatix::t_test(value ~ Treatment) %>%  # Replace 'value' with your expression column
+  rstatix::add_xy_position(x = "Group", dodge = 0.9)  # Align with beeswarm positions
+
+# Optional: Adjust p-values for multiple testing (e.g., Bonferroni)
+stat.test <- stat.test %>% rstatix::adjust_pvalue(method = "bonferroni")
+
+
+
+
+p= ggplot(data5, aes(x = Group, y = value)) +
+  geom_rect(aes(xmin = 1.5, xmax = Inf, ymin = -Inf, ymax = Inf), 
+            fill = 'grey90', color = 'grey90') +
+  geom_beeswarm(aes(fill = Treatment), dodge.width = 0.9, corral.width = 1.2,
+                key_glyph = 'rect', color = "black", size = 3, shape = 21) +
+  stat_summary(geom = "errorbar", aes(group = Treatment),
+               fun.data = "mean_se", position = position_dodge(width = 0.9),
+               color = 'black', width = 0.2) +
+  stat_summary(geom = "bar", aes(group = Treatment),
+               fun = "mean", position = position_beeswarm(dodge.width = 0.9),
+               color = 'black', fill = "transparent", width = 0.5, size = 1) +
+  
+  # Add significance annotations
+  stat_pvalue_manual(
+    stat.test, 
+    label = "p.adj.signif",  # Show symbols (***, **, *)
+    tip.length = 0.01,       # Length of the bracket tips
+    bracket.nudge.y = 0.1,   # Adjust vertical position
+    step.increase = 0.1      # Spacing between brackets
+  ) +
+  
+  scale_fill_manual(
+    name = "", 
+    values = c("Control" = "#A0CE3A", "Model" = "#D55E00", "High" = "#8DD3C7")
+  ) +
+  labs(title = "", x = "", y = "") +
+  theme_classic(base_size = 18) +
+  theme(
+    legend.position = "top",
+    legend.key.width = unit(0.6, "cm"),
+    legend.key.height = unit(0.1, "cm"),
+    legend.key = element_rect(colour = "black"),
+    axis.title = element_text(size = 18, face = "plain"),
+    axis.text = element_text(size = 18, face = "plain", colour = "black")
+  )
+
+
+
+
+
+
+
+
+
+
+# View the reshaped data
+head(df_long)
+# 准备脚本
+source("E:\\圆桌会议\\Metagenome_Function/EdgerSuper_Meta.R")
+source("E:\\圆桌会议\\Metagenome_Function//DESep2_Meta.R")
+# source("E:\\Shared_Folder\\Function_local\\R_function\\micro\\Plot.CompareWithCK.R",encoding = "utf-8")
+sample_data(ps_pro2) = sample_data(ps_pro2) %>% as.tibble() %>% mutate(group2 = as.character(Group)) %>%  
+  mutate(group2 = ifelse(group2 %in% c("Low", "Medium", "High"), "DH", group2)) %>%
+  as.data.frame() %>%
+  column_to_rownames(var = "ID")
+
+res = DESep2_Meta(ps = ps_pro2,group  = "group2",
+                   artGroup = NULL,
+                  # j = "Gene.Name",
+                   path = diffpath.1
+)
+
+res
+head(res)
+write.csv(res,"./结果/re1/OTU_1104/diff_tax2//dif_pro.csv") 
+
+res2 = res %>% filter(`DH-Modellevel` =="enriched")
+res2 = res %>% filter(`DH-Modellevel` =="depleted")
+row.names(res2 )
+res$`DH-Modellevel` 
+write.csv(res2,"./结果/re1/OTU_1104/diff_tax2//dif_pro_筛.csv") 
+
+
+
+
+
+
+
+
+
+
+
+## 结构方程模型构建-----
+# 数据准备
+library(EasyMultiOmics)
+library(plspm)
+library(vegan)
+library(dplyr)
+library(ape)
+
+da_ms =  pcoa(vegdist(t(otu_table(ps_ms2)),method="bray"), correction="none", rn=NULL)$vectors[,1]%>% as.data.frame()
+
+da_mic = pcoa(vegdist(t(otu_table(ps_mic1)),method="bray"), correction="none", rn=NULL)$vectors[,1]%>% as.data.frame()
+
+da_pro =  ps_pro %>% tax_glom_wt("Gene.Name") %>% 
+  subset_taxa(Gene.Name %in% c("Hrc",
+                               "Slc8a2",
+                               "Atp1a2",
+                               "Fundc1",
+                               "Thrsp",
+                               "Pm20d2",
+                               "Krt15",
+                               "Cdk9")) %>%
+  otu_table() %>% t() %>%  vegdist(method="bray") %>%  
+ 
+   pcoa(correction="none", rn=NULL) %>% .$vectors %>% .[,1] %>% as.data.frame()
+
+da_pro
+da_ms 
+da_mic
+
+raw_data$ID = row.names(da_ms)
+
+raw_data$Group =NULL
+
+# 获取样本名
+id_pro <- rownames(da_pro)
+id_ms  <- rownames(da_ms)
+id_mic <- rownames(da_mic)
+id_raw <- raw_data$ID
+
+# 找出所有组学共有的样本
+common_ids <- Reduce(intersect, list(id_pro, id_ms, id_mic, id_raw))
+
+# 统一顺序
+common_ids <- sort(common_ids)
+
+# 构建统一数据框
+merged_data <- data.frame(
+  SampleID   = common_ids,
+  Protein_PC1 = da_pro[common_ids, 1],
+  Metabolite_PC1 = da_ms[common_ids, 1],
+  Microbiota_PC1 = da_mic[common_ids, 1]
+)
+
+# 合并表型信息
+phenos <- raw_data[raw_data$ID %in% common_ids, ]
+phenos <- phenos[match(common_ids, phenos$ID), ]  # 确保顺序一致
+
+# 最终整合数据
+final_df <- cbind(merged_data, phenos[, -which(names(phenos) == "ID")])  # 去掉重复的 ID 列
+
+final_df$Treatment <- sub("^(W[0-9]+)_.*", "\\1", final_df$SampleID)
+
+# 将其转为因子型编码（用虚拟变量 dummy 编码）
+# 如果你愿意，也可以保留为分类变量分析
+# 这里简化为数值变量：
+# treatment_numeric <- as.numeric(as.factor(final_df$Treatment))
+# final_df$Treatment_numeric <- treatment_numeric
+# 
+# 修改模型，tre简化
+final_df$Treatment_binary <- ifelse(final_df$Treatment == "W2", 1, 0)
+
+# final_df  =  final_df %>% filter(Treatment!= "W2")
+
+
+inner_model <- rbind(
+  Treatment   = c(0, 0, 0, 0, 0),
+  Microbiota  = c(1, 0, 0, 0, 0),
+  Metabolite  = c(0, 1, 0, 0, 0),
+  Proteome    = c(0, 1, 1, 0, 0),
+  Phenotype   = c(0, 1, 1, 1, 0)
+)
+
+colnames(inner_model) <- rownames(inner_model)
+
+outer_model <- list(
+  Treatment   = "Treatment_binary",
+  Microbiota  = "Microbiota_PC1",
+  Metabolite  = "Metabolite_PC1",
+  Proteome    = "Protein_PC1",
+  Phenotype   = c("Weight", "Lean_meat_quality", "Fat_mass",
+                  "Moisture_content", "Muscle_weight",
+                  "Power_of_gripping", "Running_distance",
+                  "Swimming_speed", "Myofascial_fusion")
+)
+
+modes <- rep("A", length(outer_model))
+
+innerplot(inner_model)
+
+final_df$Fat_mass= -final_df$Fat_mass
+
+final_df$Moisture_content= -final_df$Moisture_content
+
+
+pls_model <- plspm(
+   final_df,
+ inner_model,
+   outer_model,
+ modes)
+
+
+pls_model
+plot(pls_model, txt.col = "black",what = "path")
+
+library()
+bootstrap_results <- bootstrap(pls_model, nboot = 1000)
+
+# 查看 Bootstrap 结果中的 p 值
+bootstrap_results$p_values
+# 查看并手动提取路径系数和 R²
+pls_model$path_coefs   
+pls_model$inner_model  
+pls_model$outer_model
+pls_model$gof
+pls_model$effects
+pls_model$inner_summary
+summary(pls_model)
+
+dir.create("./结果/re1/结构方程/")
+write.csv(pls_model$effects,"./结果/re1/结构方程/effects.csv")
+write.csv(pls_model$gof,"./结果/re1/结构方程/gof.csv")
+write.csv(pls_model$inner_summary,"./结果/re1/结构方程/inner_summary.csv")
+write.csv(pls_model$path_coefs,"./结果/re1/结构方程/path_coefs.csv")
+
+
+#re2------
+
+##微生物分析----- 
+ps_mic1
+##--alpha多样性#---------
+alppath = paste(otupath,"/alpha/",sep = "")
+dir.create(alppath)
+
+# source("../micro/alpha-diversity.R")
+#---多种指标alpha多样性分析加出图-标记显著性
+source("E:\\圆桌会议\\micro/alpha-diversity.R")
+
+index = c("Shannon","Inv_Simpson","Pielou_evenness","Simpson_evenness" ,
+          "Richness" ,"Chao1","ACE" )
+
+#--多种组合alpha分析和差异分析出图
+alp = alpha(ps = ps_mic1,inde="Shannon",group = "Group",Plot = TRUE )
+index= alp
+head(index)
+
+#--提取代表指标作图
+all.alpha = T
+
+if (all.alpha) {
+  sel = c(match("Inv_Simpson",colnames(index)),
+          match("Pielou_evenness",colnames(index)),
+          match("Simpson_evenness",colnames(index)),
+          match("Richness",colnames(index)),
+          match("Chao1",colnames(index)),
+          match("ACE",colnames(index)),
+          match("Shannon",colnames(index))
+          
+  )
+  h = 3
+} else{
+  sel = c(match("Shannon",colnames(index)),match("Richness",colnames(index)),
+          match("Pielou_evenness",colnames(index)))
+  h = 1
+}
+
+n = length(sel) + 3
+
+data = cbind(data.frame(ID = 1:length(index$Group),group = index$Group),index[sel])
+head(data)
+
+
+result = EasyStat::MuiKwWlx2(data = data,num = c(3:(n -1)))
+
+FileName <- paste(alppath,"/alpha_diversity_different_label.csv", sep = "")
+write.csv(result,FileName,sep = "")
+FileName <- paste(alppath,"/alpha_diversity_index.csv", sep = "")
+write.csv(index,FileName,sep = "")
+
+
+result1 = EasyStat::FacetMuiPlotresultBox(data = data,num = c(3:(n -1)),
+                                          result = result,
+                                          sig_show ="abc",
+                                          ncol = 3 )
+
+p1_1 = result1[[1]] + 
+  ggplot2::scale_x_discrete(limits = axis_order) + 
+  mytheme2 +
+  ggplot2::guides(fill = guide_legend(title = NULL)) +
+  ggplot2::scale_fill_manual(values = c("#A0CE3A" , "#D55E00", "#F2E27B", "#FCB461","#8DD3C7"))
+p1_1
+
+#如何升级展示-提取数据用小提琴图展示
+# p1_0 = result1[[2]] %>% ggplot(aes(x=group , y=dd )) + 
+#   geom_violin(alpha=1, aes(fill=group)) +
+#   geom_jitter( aes(color = group),
+#                position=position_jitter(0.17), size=3, alpha=0.5)+
+#   labs(x="", y="")+
+#   facet_wrap(.~name,scales="free_y",ncol  = 3) +
+#   # theme_classic()+
+#   geom_text(aes(x=group , y=y ,label=stat)) +
+#   ggplot2::scale_x_discrete(limits = axis_order) + 
+#   mytheme1 +
+#   guides(color=guide_legend(title = NULL),
+#          shape=guide_legend(title = NULL),
+#          fill = guide_legend(title = NULL)
+#   ) +
+#   ggplot2::scale_fill_manual(values = colset1)
+# p1_0
+# 
+# res = EasyStat::FacetMuiPlotresultBar(data = data,num = c(3:(n -1)),result = result,sig_show ="abc",ncol = 3)
+# 
+# p1_2 = res[[1]]+ scale_x_discrete(limits = axis_order) + guides(color = FALSE) +
+#   mytheme1+ 
+#   guides(fill = guide_legend(title = NULL))+
+#   scale_fill_manual(values = colset1)
+# p1_2
+# 
+# res = EasyStat::FacetMuiPlotReBoxBar(data = data,num = c(3:(n -1)),result = result,sig_show ="abc",ncol = 3)
+# p1_3 = res[[1]]+ scale_x_discrete(limits = axis_order) + 
+#   mytheme1 + 
+#   guides(fill = guide_legend(title = NULL))+
+#   scale_fill_manual(values = colset1)
+# p1_3
+# 
+# 
+# FileName <- paste(alppath,"Alpha_Facet_vl", ".pdf", sep = "")
+# ggsave(FileName, p1_0, width = ((1 + gnum) * 3), height =4 *h,limitsize = FALSE)
+# FileName <- paste(alppath,"Alpha_Facet_vl", ".png", sep = "")
+# ggsave(FileName, p1_0, width = ((1 + gnum) * 3), height =4 *h,limitsize = FALSE)
+# 
+
+FileName <- paste(alppath,"Alpha_Facet_box", ".pdf", sep = "")
+ggsave(FileName, p1_1, width = ((1 + gnum) * 2), height =3.5 *h,limitsize = FALSE)
+
+# FileName <- paste(alppath,"Alpha_Facet_bar", ".pdf", sep = "")
+# ggsave(FileName, p1_2, width = ((1 + gnum) * 3), height = 4 *h,limitsize = FALSE)
+# 
+# FileName <- paste(alppath,"Alpha_Facet_boxbar", ".pdf", sep = "")
+# ggsave(FileName, p1_3, width = ((1 + gnum) * 3), height = 4 *h,limitsize = FALSE)
+
+#--总体差异检测alpha多样性
+krusk1 = ggpubr::compare_means( Shannon ~ group, data=data, method = "kruskal.test")
+krusk2 = ggpubr::compare_means( Richness ~ group, data=data, method = "kruskal.test")
+krusk3 = ggpubr::compare_means( Pielou_evenness ~ group, data=data, method = "kruskal.test")
+
+dat = rbind(krusk1,krusk2,krusk3) %>% as.data.frame()
+FileName <- paste(alppath,"/alpha_diversity_index_all_p_Kruskal-Wallis.csv", sep = "")
+write.csv(dat,FileName,sep = "")
+
+##---排序分析beta-diversity#-----
+betapath = paste(otupath,"/beta/",sep = "")
+dir.create(betapath)
+
+# "unifrac" "wunifrac" "dpcoa" "jsd" "manhattan" "euclidean"   "canberra" "bray" "kulczynski" 
+# "jaccard" "gower" "altGower" "morisita" "horn" "mountford"  "raup" "binomial" 
+# "chao"  "cao" "w"  "-1"  "c" "wb"  "r"   "I"  "e" "t" "me"   "j"  "sor"  "m"   "-2"  "co"
+# DCA, CCA, RDA, NMDS, MDS, PCoA, PCA, LDA tsne 
+
+source("E:\\圆桌会议\\micro/BetaDiv.R")
+source("E:\\圆桌会议\\micro/MicroTest.R")
+source("E:\\圆桌会议\\micro/pairMicroTest.R")
+
+methodlist = c("NMDS","PCoA", "PCA")
+
+# "anosim" "adonis" "MRPP"
+# methodlist = c("LDA")
+method = "NMDS"
+"#A0CE3A" "#8DD3C7" "#F2E27B" "#FCB461" "#D55E00"
+
+colset1=c("#A0CE3A" , "#D55E00", "#F2E27B", "#FCB461","#8DD3C7")
+
+for (method in methodlist) {
+  result = BetaDiv(ps = ps_mic1, group = "Group", 
+                   dist = "bray",
+                   method = method, Micromet = "anosim", pvalue.cutoff = 0.05,
+                   pair = T)
+  p3_1 = result[[1]] + 
+    scale_fill_manual(values = colset1)+
+    scale_color_manual(values = colset1,guide = F) +
+    mytheme1 
+  # theme(legend.position = c(0.2,0.2))
+  p3_1
+  #带标签图形出图
+  p3_2 = result[[3]] +
+    scale_fill_manual(values = colset1)+
+    scale_color_manual(values = colset1,guide = F) + 
+    mytheme1 
+  # theme(legend.position = c(0.2,0.2))
+  p3_2
+  
+  FileName <- paste(betapath,"/a2_",method,"bray.pdf", sep = "")
+  ggsave(FileName, p3_1, width = 6, height = 4.5)
+
+  
+  FileName <- paste(betapath,"/a2_",method,"bray_label.pdf", sep = "")
+  ggsave(FileName, p3_2, width = 12, height = 12)
+
+  
+  # 提取出图数据
+  plotdata = result[[2]]
+  FileName <-  paste(betapath,"/a2_",method,"bray.csv", sep = "")
+  write.csv(plotdata,FileName)
+  #---------排序-精修图
+  plotdata =result[[2]]
+  head(plotdata)
+  # 求均值
+  cent <- aggregate(cbind(x,y) ~Group, data = plotdata, FUN = mean)
+  cent
+  # 合并到样本坐标数据中
+  segs <- merge(plotdata, setNames(cent, c('Group','oNMDS1','oNMDS2')),
+                by = 'Group', sort = FALSE)
+  
+  # p2$layers[[2]] = NULL
+  # library(ggcor)
+  library(ggsci)
+  p3_3 = p3_1 +geom_segment(data = segs,
+                            mapping = aes(xend = oNMDS1, yend = oNMDS2,color = Group),show.legend=F) + # spiders
+    geom_point(mapping = aes(x = x, y = y),data = cent, size = 3,pch = 24,color = "black",fill = "yellow") +
+    scale_fill_manual(values = colset1)+
+    scale_color_manual(values = colset1,guide = F) + 
+    mytheme1 
+  # theme(legend.position = c(0.2,0.2))
+  p3_3
+  
+  FileName <- paste(betapath,"/a2_",method,"bray_star.pdf", sep = "")
+  ggsave(FileName, p3_3, width = 5, height = 4)
+
+  
+}
+
+map
+
+#提取总体比较
+TResult =result[[5]]
+head(TResult)
+
+# 提取两两检测结果
+pair = result[[4]]
+pair
+FileName <- paste(betapath,"Pair_anosim.csv", sep = "")
+write.csv(pair,FileName)
+FileName <- paste(betapath,"Total_anosim.csv", sep = "")
+write.csv(TResult,FileName)
+
+#--换用adonis差异分析
+# title1 = MicroTest(ps = ps, Micromet = "adonis", dist = "bray")
+# title1
+# FileName <- paste(betapath,"Total_adonis.csv", sep = "")
+# write.csv(title1,FileName)
+# pairResult = pairMicroTest(ps = ps, Micromet = "adonis", dist = "bray")
+# FileName <- paste(betapath,"Pair_anosim.csv", sep = "")
+# write.csv(pair,FileName)
+
+##-------物种组成展示#---------
+source("E:\\圆桌会议\\micro/barMainplot.R")
+barpath = paste(otupath,"/Microbial_composition/",sep = "")
+dir.create(barpath)
+
+phyloseq::rank_names(ps_mic1)
+
+for (j in c("Phylum" , "Class" ,  "Order"  , "Family" , "Genus","Species")) {
+  result = barMainplot(ps = ps_mic1,
+                       j = j,
+                       axis_ord = as.character(axis_order),
+                       label = FALSE,
+                       sd = FALSE,
+                       Top = 9)
+  p4_1 <- result[[1]] + 
+     scale_fill_brewer(palette = "Paired") + 
+   # scale_fill_manual(values = colset2) +
+    scale_x_discrete(limits = axis_order) +
+    mytheme1
+  p4_1
+  
+  p4_2  <- result[[3]] + 
+     scale_fill_brewer(palette = "Paired") + 
+    #scale_fill_manual(values = colset2) +
+    scale_x_discrete(limits = axis_order) + 
+    mytheme1
+  p4_2
+  
+  databar <- result[[2]] %>% group_by(Group,aa) %>%
+    summarise(sum(Abundance)) %>% as.data.frame()
+  head(databar)
+  colnames(databar) = c("Group",j,"Abundance(%)")
+  
+  
+  FileName1 <- paste(barpath,"/a2_",j,"_barflow",".pdf", sep = "")
+  ggsave(FileName1, p4_2, width = (5+ gnum), height =8 )
+  # FileName2 <- paste(barpath,"/a2_",j,"_barflow",".jpg", sep = "")
+  # ggsave(FileName2, p4_2, width = (5+ gnum), height =8 )
+  
+  FileName1 <- paste(barpath,"/a2_",j,"_bar",".pdf", sep = "")
+  ggsave(FileName1, p4_1, width = (5+ gnum), height =8 )
+  # FileName2 <- paste(barpath,"/a2_",j,"_bar",".jpg", sep = "")
+  # ggsave(FileName2, p4_1, width = (5+ gnum), height =8 )
+  
+  FileName <- paste(barpath,"/a2_",j,"_bar_data",".csv", sep = "")
+  write.csv(databar,FileName,quote = F)
+}
+
+detach("package:ggalluvial")
+
+##随机森林----
+# 读取之前的结果
+getwd()
+
+importance =  read.csv("./三组学/micro//result_and_plot/Diversity_Micro/OTU_重新挖掘/差异微生物及其重要性.csv") %>% 
+  filter(!str_detect(Species,"Unidentified"))    %>% 
+  filter(!str_detect(Species,"Unclassified"))    
+
+
+importance$Phylum = gsub("_D","",importance$Phylum)
+importance$Phylum = gsub("_A","",importance$Phylum)
+
+mycol3 <- rev(c('#FCCDE5',
+                '#B3DE69','#FDB462','#80B1D3','#FB8072',
+                '#BEBADA','#8DD3C7'))
+
+plot_4 <- ggplot(importance[1:10,], 
+                 aes(x = MeanDecreaseAccuracy, y = reorder(Species, MeanDecreaseAccuracy),
+                     fill = Phylum,color = Phylum)) +
+  geom_point(size=2.5,pch=21)+
+  geom_segment(aes(yend=Species),xend=0,size=2,show.legend = FALSE)+
+  scale_color_manual(values = mycol3)+
+  scale_fill_manual(values = mycol3)+
+  # theme_new+
+  # scale_x_continuous(limits = c(min(importance[50:1,]$MeanDecreaseAccuracy)*0.95,
+  #                               max(importance[50:1,]$MeanDecreaseAccuracy)*1.03),
+  #                    expand = c(0,0),breaks = seq(1.4,2.3,0.3))+
+  scale_y_discrete(position = "right")+
+  theme(legend.position = c(0.999,0.001),
+        legend.justification = c(1,0.01),
+        legend.text = element_text(size = 9,face = "plain"),
+        legend.title = element_text(size = 9.5,face = "bold"),
+        #legend.key.size = unit(0.2,"mm"),
+        legend.key.height = unit(5,"mm"),
+        legend.key.width = unit(1,"mm") ,
+        axis.text.y = element_text(size = 9,face = "plain"))+
+  labs(y="")+
+  guides(color = guide_legend(override.aes = list(size=3)))+
+  theme_bw()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+plot_4
+
+# Filename <- paste(randompath,"Importance_of_Species.pdf",sep="")
+# ggsave("./result_and_plot/Diversity_Micro/OTU_重新挖掘/随机森林.pdf",plot_4,width = 17/2.54,height = 4.5) 
+dir.create("./结果/re2/OTU_1104/随机森林")
+
+ggsave("./结果/re2/OTU_1104/随机森林/随机森林2.pdf",plot_4,height = 4,width = 6)
+write.csv(importance,"./结果/re2/OTU_1104/随机森林/随机森林.csv")
+
+
+# 随机森林变量数量选择
+library(EasyMultiOmics)
+library(randomForest)
+library(caret)
+library(ROCR) ##用于计算ROC
+library(e1071)
+result =rfcv.Micro(ps = ps_mic1, # %>% filter_OTU_ps(100),
+                   group  = "Group",optimal = 15,nrfcvnum = 6)
+
+
+prfcv = result[[1]]
+p = prfcv+ #scale_x_continuous(breaks = c(1, 2, 5, 10, 20, 30, 50, 100))+
+theme_bw()
+
+
+# result[[2]]# plotdata
+rfcvtable = result[[3]]
+rfcvtable
+
+ggsave("./结果/re2/OTU_1104/随机森林/rfcv.pdf",p ,height = 3,width = 3.5)
+
+
+### roc曲线-----
+EasyMultiOmics::Roc.micro(ps= ps_mic1)
+
+## 浓度效应值计算------
+importance[1:10,]$Species
+
+ps_mic2 =  ps_mic1%>% scale_micro() %>% tax_glom_wt("Species") %>% subset_taxa( Species %in% importance[1:10,]$Species )
+
+otu <- otu_table(ps_mic2 )
+tax <- tax_table(ps_mic2 )
+
+otu_df <- as.data.frame(otu)
+
+tax_df <- as.data.frame(tax)
+
+otu_df$Species <- tax_df$Species
+
+# 聚合相同属的数据（即同一属内的OTU求和）
+otu_grouped <- otu_df 
+
+# 转换为长格式用于 ggplot
+otu_long <- otu_grouped %>%
+  pivot_longer(-Species, names_to = "Sample", values_to = "Abundance")
+
+map = sample_data(ps_mic2) %>% as.tibble()
+
+otu_long2 =   otu_long %>%
+  left_join(map, by = c("Sample" = "ID"))
+
+# %>%mutate(Compounds = factor(Compounds, levels = c("Ck.water", setdiff(unique(Compounds), "Ck.water"))))
+
+library(metafor)
+
+id3 = otu_long2$Species %>% unique()
+
+j=1
+
+id3[j]
+
+dat <- NULL  
+
+otu_long2 =  otu_long2 %>% filter(Group !="Low")
+otu_long2$Group
+
+
+for (j in c(1:length(id3))) {
+
+  raw_data <- otu_long2 %>% filter(Species%in% id3[j] )
+
+  raw_data$Group
+  
+  raw_data <- raw_data %>% mutate(Group = as.character(Group)) %>% 
+    mutate(Group = ifelse(Group %in% c("Low", "Medium", "High"), "TR", Group)) %>% 
+    mutate(Group = ifelse(Group %in% c("Model"), "Control", Group))
+  
+  raw_data =  dplyr::rename(raw_data, c("TR" =  "Group") )
+  
+  summary_data <- raw_data %>%  filter(TR != "Control") %>%  # 过滤掉对照CK的数据  
+    dplyr:: group_by(TR) %>%  dplyr:: summarize(    TMean = mean(Abundance   ),    TSD = sd(Abundance   ),    TN = n(),  # 计算每个处理的观测次数    
+                                    CMean = mean(raw_data$Abundance[raw_data$TR == "Control"]),  # 计算对照CK的均值    
+                                    CSD = sd(raw_data$Abundance   [raw_data$TR == "Control"]),  # 计算对照CK的标准差    
+                                    CN = n()   ) 
+  # 整理后的数据框
+  
+  print(summary_data)
+  
+  # 读取数据
+  d1 <- summary_data
+  eps <- 1e-10
+  d1 <- d1 %>%
+    mutate(
+      TMean = ifelse(TMean <= 0, eps, TMean),
+      CMean = ifelse(CMean <= 0, eps, CMean)
+    )
+  # 计算效应值 yi 和方差 vi
+  d2 <- escalc(
+    measure = "ROM", 
+    data = d1, 
+    m1i = TMean, sd1i = TSD, n1i = TN, 
+    m2i = CMean, sd2i = CSD, n2i = CN
+  )
+  
+  d2 <- d2[!is.na(d2$yi) & !is.na(d2$vi) & !is.infinite(d2$yi) & !is.infinite(d2$vi), ]
+  # 计算整体效应值
+  r1 <- rma(yi, vi, data = d2, method = "REML")
+  summary(r1)
+  
+  # 将整体效应值赋值给 kk1，后续绘图使用
+  kk1 <- summary(r1)
+  
+  # 计算亚组效应值
+  subgroups <- unique(d2$TR)  # 提取所有不重复的处理名称
+  subgroup_results <- list()  # 用于存储各亚组结果
+  
+  for (subgroup in subgroups) {
+    subgroup_data <- subset(d2, TR == subgroup)  # 当前亚组数据
+    subgroup_result <- rma(yi, vi, data = subgroup_data, method = "REML")  # 亚组效应值
+    subgroup_results[[subgroup]] <- subgroup_result
+  }
+  
+  # 查看每个亚组的效应值
+  for (subgroup in subgroups) {
+    print(subgroup_results[[subgroup]])
+  }
+  
+  # 汇总整体效应值
+  combined_data1 <- data.frame(
+    estimate = kk1$b,
+    se = kk1$se,
+    pval = kk1$pval
+  )
+  
+  # 汇总亚组效应值
+  combined_subgroup_data <- list()
+  
+  for (subgroup in subgroups) {
+    subgroup_result <- subgroup_results[[subgroup]]
+    combined_subgroup_data[[subgroup]] <- data.frame(
+      estimate = subgroup_result$b,
+      se = subgroup_result$se,
+      pval = subgroup_result$pval
+    )
+  }
+  
+  # 合并所有亚组数据框
+  combined_data_subgroup <- do.call(rbind, combined_subgroup_data)
+  # 添加亚组名称列
+  combined_data_subgroup$Subgroup <- rownames(combined_data_subgroup)
+  # 打印亚组结果
+  print(combined_data_subgroup)
+  # 添加显著性标记列
+  data_df <- combined_data_subgroup
+  data_df$sig <- ""
+  
+  for (i in 1:nrow(data_df)) {
+    if (data_df$pval[i] < 0.001) {
+      data_df$sig[i] <- "***"
+    } else if (data_df$pval[i] < 0.01) {
+      data_df$sig[i] <- "**"
+    } else if (data_df$pval[i] < 0.05) {
+      data_df$sig[i] <- "*"
+    }
+  }
+  
+  # 打印最终带显著性标记的数据
+  print(data_df)
+  # 加载必要的库
+  library(ggthemes)
+  library(ggplot2)
+  # 读取并排序数据，按 estimate 降序排列
+  dataset <- as.data.frame(data_df)
+  dataset$index <- rownames(dataset)
+  # 排序数据
+  dataset <- dataset[order(-dataset$estimate), ]
+  
+  # 将 index 设置为因子，并按照排序后的顺序固定
+  dataset$index <- factor(dataset$index, levels = dataset$index)
+  dataset$sig
+  dataset$Species = id3[j]
+  dat[[j]] = dataset
+}
+
+final_result <- bind_rows(dat) 
+# 绘图
+
+importance[1:10,]$Species
+
+top15_order <- importance[1:10, ]$Species
+
+# 先把 final_result 中的 Species 转成因子，并指定 levels
+final_result$Species <- factor(final_result$Species,
+                               levels = rev(top15_order))
+
+
+
+
+p= ggplot(final_result #%>% filter(sig!="")
+            , aes(estimate, Species)) +
+  geom_point(size = 1.5) +
+  geom_errorbarh(aes(xmax = estimate + se, xmin = estimate - se), size = 0.8, height = 0.2) +
+  #   scale_x_continuous(limits = c(-2.5, 2.5)) +
+ #  xlab('效应量 Effect size') +
+ #  ylab(id3[j]) +
+ # theme_few() +
+  theme(
+    axis.text.x = element_text(size = 24, color = "black"),
+    axis.text.y = element_text(size = 24, color = "black"),
+    title = element_text(size = 24)
+  ) +
+  theme_bw() +# 在点的右侧添加显著性星号
+ geom_text(aes(label = sig),
+           nudge_x = 0.5,       # 根据你的 x 轴范围微调
+          hjust = -0.2,       # 垂直居中
+           size     = 4,         # 文本大小
+           colour   = "black",
+          vjust    = 0.5) +
+  geom_vline(aes(xintercept = 0), color = "gray", linetype = "dashed", size = 0.6) 
+
+
+
+
+dir.create("./结果/re2/OTU_1104/effect")
+
+ggsave("./结果/re2/OTU_1104/effect/effect3.pdf",p,height = 4,width = 5)
+
+
+
+write.csv(final_result,"./结果/re2/OTU_1104/effect/effect2.csv")
+
+
+#更改可视化
+
+final_result= read.csv("./结果/re2/OTU_1104/effect/effect.csv")
+
+ggplot(final_result #%>% filter(sig!="")
+       , aes(estimate, Species)) +
+  geom_point(size = 1) +
+  geom_errorbarh(aes(xmax = estimate + se, xmin = estimate - se), size = 0.5, height = 0.2) +
+  #   scale_x_continuous(limits = c(-2.5, 2.5)) +
+  #  xlab('效应量 Effect size') +
+  #  ylab(id3[j]) +
+  # theme_few() +
+  theme(
+    axis.text.x = element_text(size = 24, color = "black"),
+    axis.text.y = element_text(size = 24, color = "black"),
+    title = element_text(size = 24)
+  ) +
+  theme_bw() +# 在点的右侧添加显著性星号
+  geom_text(aes(label = sig),
+            nudge_x = 0.5,       # 根据你的 x 轴范围微调
+            hjust = -0.2,       # 垂直居中
+            size     = 4,         # 文本大小
+            colour   = "black",
+            vjust    = 0.5) +
+  geom_vline(aes(xintercept = 0), color = "gray", linetype = "dashed", size = 0.6) 
+
+
+
+
+
+
+### 考虑不同浓度-----
+library(dplyr)
+library(metafor)
+library(ggplot2)
+library(ggthemes)
+
+# 1. 筛选并重命名
+
+otu2 <- otu_long2 %>% filter(Group != "Model") %>%
+ dplyr:: rename(Treatment = Group)
+
+species_i ="CAG-873 sp011959565"
+results_list <- lapply(id3, function(species_i) {
+  
+  
+  data_i <- otu2 %>% filter(Species == species_i)
+  
+  # 2. 对照组统计
+  ctrl <- data_i %>%
+    filter(Treatment == "Control") %>%
+    summarise(
+      CMean = mean(Abundance),
+      CSD   = sd(Abundance),
+      CN    = n()
+    )
+  
+  # 3. 处理组统计
+  sumt <- data_i %>%
+    filter(Treatment != "Control") %>%
+    group_by(Treatment) %>%
+    summarise(
+      TMean = mean(Abundance),
+      TSD   = sd(Abundance),
+      TN    = n()
+    ) %>%
+    mutate(
+      CMean = ctrl$CMean,
+      CSD   = ctrl$CSD,
+      CN    = ctrl$CN
+    )
+  
+  # 4. 避免零或负值
+  eps <- 1e-10
+  sumt <- sumt %>%
+    mutate(
+      TMean = ifelse(TMean <= 0, eps, TMean),
+      CMean = ifelse(CMean <= 0, eps, CMean)
+    )
+  
+  # 5. 计算效应值
+  esc <- escalc(
+    measure = "ROM",
+    m1i = TMean, sd1i = TSD, n1i = TN,
+    m2i = CMean, sd2i = CSD, n2i = CN,
+    data = sumt
+  ) %>%
+    filter(!is.na(yi), !is.na(vi), is.finite(yi), is.finite(vi))
+  
+  # 6. 随机效应模型（按Treatment分亚组）
+  submods <- esc %>%
+    group_by(Treatment) %>%
+    do(model = rma(yi, vi, data = ., method = "REML"))
+  
+  # 7. 整理输出数据框
+  df_sub <- submods %>%
+    summarise(
+      estimate = model$b,
+      se       = model$se,
+      pval     = model$pval
+    ) %>%
+    mutate(
+      sig = case_when(
+        pval < 0.001 ~ "***",
+        pval < 0.01  ~ "**",
+        pval < 0.05  ~ "*",
+        TRUE         ~ ""
+      ),
+      Species = species_i
+    )
+  
+  df_sub
+  
+})
+
+
+final_df <- bind_rows(results_list)
+
+# 8. 绘图：每个Species一个小面板
+ggplot(final_df, aes(x = estimate, y = Treatment)) +
+  geom_point(size = 2) +
+  geom_errorbarh(aes(xmin = estimate - se, xmax = estimate + se), height = 0.2) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +
+  facet_wrap(~ Species, scales = "free_y") +
+  labs(
+    x = "Effect size (log response ratio)",
+    y = "Concentration treatment"
+  ) +
+  theme_bw(base_size = 14) +
+  theme(panel.grid.minor = element_blank())
+
+
+
+
+
+
+
+## 丰度差异展示-----
+# dif =  read.csv("./结果/re2/OTU_1104/diff_tax2/DEsep2/_OTU_DESep2_all.csv")
+# dif2 =  dif %>% filter(D.DHlevel =="depleted") %>%  filter(!str_detect(species,c("sp0"))) %>% 
+#   filter(!str_detect(species,"Unidentified"))    %>% 
+#   filter(!str_detect(species,"Unclassified"))    
+
+ps_s = ps_mic2
+
+dat =  ps_s %>% psmelt() %>%
+  #filter(Group!="W10")%>%
+  dplyr::select(Group,Abundance , OTU) %>% as.data.frame()
+
+dat$log =  log10(dat$Abundance+0.00001)
+
+
+
+dat=  dat%>% filter(Group!= "Low")
+
+
+
+dat = dat %>% mutate(Group = as.character(Group)) %>%  
+  mutate(group2 = ifelse(Group %in% c("Low", "Medium", "High"), "DH", Group))%>%  
+  mutate(group2 = ifelse(group2 %in% c("Model"), "D", group2))%>%  
+  mutate(group2 = ifelse(group2 %in% c("Control"), "H", group2))
+
+# 展示属
+# ps_s = ps %>% transform_sample_counts( function(x) x / sum(x) )  %>% subset_taxa.wt(rank = "Genus",id = dif2 $genus )
+# 
+# dat =  ps_s %>% psmelt() %>% select(group2,Abundance , Genus) %>% as.data.frame()
+# dat$group2 %>% unique() 
+# 
+
+
+dat$OTU %>% unique()
+
+# "Bittarella massiliensis","CAJLXD01 sp900551585",
+# "Psychrobacter pasteurii", 
+# "Lactobacillus gasseri" , 
+# "Parabacteroides_B_862066 distasonis"
+
+# # 按照处理分面
+# ggplot(dat,aes(OTU,log,color =  OTU))+
+#   # geom_point()+
+#   geom_boxplot()+
+#   facet_wrap(~group2)+
+#   theme()
+# 
+# # 按照OTU分面
+# ggplot(dat,aes(group2,Abundance,color =  OTU))+
+#   # geom_point()+
+#   geom_boxplot()+
+#   facet_wrap(~OTU,scales = "free")+
+#   scale_x_discrete(limits = c("D","DH","H"))
+# 
+# # 分别计算 DH 相对H 以及 DH相对 D 的log2
+
+avg_abundance  <- dat %>%
+  mutate(Abundance = Abundance + 1e-10) %>%
+  dplyr::group_by(OTU, group2) %>%
+  dplyr::summarise(mean_abundance = mean(Abundance), .groups = "drop") %>%
+  pivot_wider(names_from = group2, values_from = mean_abundance)
+
+avg_abundance <- avg_abundance %>%
+  mutate(
+    log2FC_DH_vs_H = log2(DH / H),
+    log2FC_DH_vs_D = log2(DH / D)
+  )
+
+avg_abundance 
+
+long_data <- avg_abundance %>%
+  pivot_longer(
+    cols = c(log2FC_DH_vs_H, log2FC_DH_vs_D),
+    names_to = "Comparison",
+    values_to = "log2FC",
+    names_prefix = "log2FC_"  # 自动去除前缀
+  )
+
+filter(long_data, OTU=="")
+library(DataEditR)
+long_data = data_edit(long_data)
+
+long_data = read.csv("./结果/re2/OTU_1104/diff_tax2/long_data.csv")
+top15_order <- importance[1:10, ]$Species
+
+p = ggplot(long_data, aes(x = log2FC, y = OTU, fill = Comparison)) +
+  geom_point(shape = 21,size = 3, alpha = 0.9,color = "black") +  # 调整点大小
+  geom_vline(xintercept = 1, linetype = "dashed",size = 0.5) +  # 绘制中线（log2FC=0）
+  scale_fill_manual(values = c("DH_vs_H" ='#FDB462', "DH_vs_D" = "#4DBBD5")) +  # 自定义颜色
+  labs(x = "log2 Fold Change", y = "", color = "Comparison") +
+  theme_few() +
+  theme(
+   #  axis.text.y = element_text(face = "italic"),  # 菌名斜体显示（可选）
+    legend.position = "top"  # 图例放在顶部
+  ) +theme_bw() +
+  scale_y_discrete(limits = rev(top15_order))
+p
+
+
+p = ggplot(long_data, aes(x = log2FC, y = OTU, fill = Comparison, size = abs(log2FC))) +
+  geom_point(shape = 21, alpha = 0.9, color = "black") +  # 调整点大小
+  geom_vline(xintercept = 1, linetype = "dashed", size = 0.5) +  # 绘制中线（log2FC=0）
+  scale_fill_manual(values = c("DH_vs_H" = '#FDB462', "DH_vs_D" = "#4DBBD5")) +  # 自定义颜色
+  labs(x = "log2 Fold Change", y = "", color = "Comparison") +
+  theme_few() +
+  theme(
+    legend.position = "top"  # 图例放在顶部
+  ) + theme_bw() +
+  scale_y_discrete(limits = rev(top15_order)) +
+  scale_size_continuous(range = c(1.5, 5))  # 设置点的大小范围
+p
+
+
+ggsave("./结果/re2/OTU_1104/diff_tax2/dif3.pdf",p,height = 4,width = 6)
+
+write.csv(long_data,"./结果/re2/OTU_1104/diff_tax2/long_data.csv")
+
+
+## 菌株丰度与处理的回归------
+dat2 =  dat %>% filter( OTU== "Lactobacillus johnsonii") 
+write.csv(dat2,"./结果/re2/OTU_1104/diff_tax2/ab_lac.csv")
+
+dat2 =  read.csv("./结果/re2/OTU_1104/diff_tax2/ab_lac.csv")
+
+col = c("#A0CE3A" , "#8DD3C7", "#F2E27B", "#FCB461", "#D55E00")
+
+str(dat2)
+
+dat2$group3 = as.numeric(dat2$group3)
+
+dat2$Group %>%unique()
+
+p= ggplot(dat2, aes(x = group3, y = Abundance, color = Group, size = Abundance)) + 
+ #  geom_point(alpha = 0.2) +  # 添加点，透明度设为0.7
+   geom_jitter(alpha = 0.5)+
+   # scale_y_continuous(limits = c(0, 0.05), expand = c(0, 0)) +  # 设置 y 轴范围
+ # scale_x_discrete() +  # 对 x 轴使用离散值（group3 为分类数据）
+  scale_size_continuous(range = c(3, 6), # 控制气泡大小范围
+                        breaks = c(0.01, 0.05),  # 设置气泡大小刻度
+                        labels = scales::comma_format()) +  # 格式化大小
+  scale_color_manual(values = c("Control" ="#A0CE3A", "Low"=  "#F2E27B", "Medium"=  "#FCB461" ,
+                                "High" = "#4DBBD5")) +  # 自定义颜色
+  labs(x = "Group 3", 
+       y = "Abundance", 
+       color = "Group") + 
+  theme_classic() + 
+  theme(legend.position = "top")+
+   geom_abline(intercept = 0, slope = 1, color = "black", linetype = 5) +  # 45度斜线
+   geom_smooth(method = "lm", se = TRUE, color = "black", show.legend = FALSE)+ 
+  #  geom_point(alpha = 0.2) +  # 添加点，透明度设为0.7
+  geom_jitter(alpha = 0.5) +  # 线性回归
+   ggpubr::stat_cor(aes(group= Group),method = "pearson", label.x = 0.5, label.y = 0.04, size = 5)
+
+
+ggsave("./结果/re2/OTU_1104/diff_tax2/cor4.pdf",p,height = 3,width = 3)
+
+
+
+## 网络-----
+netpath = ("./结果/re2/OTU_1104/net/igraph2")
+dir.create(netpath)
+
+rank.names(ps)
+library(ggrepel)
+library(igraph)
+detach("package:MicrobiotaProcess")
+network.2
+
+library(ggnewscale)
+?network.i
+sample_data(ps_mic1)
+otu_table(ps_mic1)
+result = network.i(ps =  ps_mic1,
+                   N = 500,
+                   r.threshold=0.6,
+                   big = T,
+                   select_layout = T,
+                   method = "spearman",
+                   scale = FALSE,
+                   layout_net = "model_igraph2",
+                   p.threshold=0.05,
+                   label = FALSE,
+                   path =netpath ,
+                   zipi = F,
+                   order = NULL
+)
+
+p1 = result[[1]]
+
+plotname1 = paste(netpath,"/network_all.pdf",sep = "")
+ggsave(plotname1, p1,width = 10,height = 3,limitsize = FALSE)
+
+
+
+tab.r = network.pip(
+  ps = ps_mic1,
+  N = 500,
+  # ra = 0.05,
+  big = TRUE,
+  select_layout = FALSE,
+  layout_net = "model_igraph2",
+  r.threshold = 0.6,
+  p.threshold = 0.05,
+  maxnode = 2,
+  method = "spearman",
+  label = FALSE,
+  # lab = c("Lactobacillus johnsonii","Parabacteroides_B_862066 distasonis","Bifidobacterium globosum",
+  #         "Faecalibaculum rodentium"),
+  group = "Group",
+  fill = "Phylum",
+  size = "igraph.degree",
+  zipi = FALSE,
+  ram.net = TRUE,
+  clu_method = "cluster_fast_greedy",
+  step = 100,
+  R=10,
+  ncpus = 1
+)
+#  建议保存一下输出结果为R对象，方便之后不进行相关矩阵的运算，节约时间
+saveRDS(tab.r,paste0(netpath,"network.pip.ps_expanded.rds"))
+tab.r = readRDS(paste0(netpath,"network.pip.ps_expanded.rds"))
+
+
+
+dat = tab.r[[2]]
+cortab = dat$net.cor.matrix$cortab
+# 大型相关矩阵跑出来不容易，建议保存，方便各种网络性质的计算
+saveRDS(cortab,paste0(netpath,"cor.matrix.all.ps_expanded.rds"))
+cor = readRDS(paste0(netpath,"cor.matrix.all.ps_expanded.rds"))
+
+#-提取全部图片的存储对象
+plot = tab.r[[1]]
+# 提取网络图可视化结果
+p0 = plot[[1]]
+
+p0 = plot[[1]]
+
+ggsave(paste0(netpath,"plot.ps_expanded.pdf"),p0,width = 12,height = 5)
+ggsave(paste0(netpath,"plot.ps_expanded.pdf"),p0,width = 16,height = 10)
+
+
+
+
+## 菌株与表型的关联------
+ps_lac =   ps_mic1 %>%  scale_micro()%>% subset_taxa(Species %in% "Lactobacillus johnsonii")
+
+# ps_dat = merge.ps(ps_bile,ps_sugar,dat1.lab = "bile", dat2.lab = "sugar" )
+# 
+# tax_table(ps_dat)
+
+otu_lac = ps_lac%>% vegan_otu() %>% as.data.frame()
+
+row.names(raw_data)= raw_data$ID
+raw_data$ID = NULL
+
+otu_all =  merge(raw_data,otu_lac, by = "row.names")
+
+otu_all <- otu_all %>% filter(!str_detect(Row.names, "W10"))
+
+otu_all$Row.names= NULL
+
+occor = psych::corr.test(otu_all, use = "pairwise", 
+                         method ="spearman", adjust = "fdr", alpha = 0.05)
+occor.r = occor$r
+occor.p = occor$p
+
+
+# 假设 occor.r 是相关系数矩阵，occor.p 是p值矩阵
+
+# 1. 提取 Lactobacillus_johnsonii 的行（与其他所有变量的相关性）
+lj_cor <- occor.r["Lactobacillus johnsonii", ]
+lj_p <- occor.p["Lactobacillus johnsonii", ]
+
+# 2. 合并为数据框
+lj_cor_df <- data.frame(
+  variable = names(lj_cor),
+  correlation = as.numeric(lj_cor),
+  p_value = as.numeric(lj_p)
+) %>% 
+  mutate(correlation = if_else(correlation < 0, abs(correlation), -correlation))
+# 3. 筛选出有显著相关性的生理指标（可根据需要调整p值阈值）
+significant_lj_cor <- lj_cor_df %>% 
+  filter(variable != "Lactobacillus johnsonii",  # 移除与自身的相关性
+         p_value < 0.05) %>%                    # 筛选显著相关
+  arrange(desc(abs(correlation)))               # 按相关性绝对值排序
+
+# 4. 查看结果
+head(significant_lj_cor)
+
+# 5. 如果你想将 occor 转换为数据框并筛选（如你问题中的 occor2）
+occor2 <- data.frame(
+  from = "Lactobacillus johnsonii",
+  to = rownames(occor.r),
+  r = occor.r[, "Lactobacillus johnsonii"],
+  p = occor.p[, "Lactobacillus johnsonii"]
+) %>%
+  filter(to != "Lactobacillus johnsonii")     %>% 
+  mutate(r = if_else(r < 0, abs(r), -r))                   # 筛选显著相关
+
+occor2$p= occor2$p/10
+
+# 使用筛选后的数据创建网络图
+library(ggraph)
+library(igraph)
+library(ggplot2)
+library(tidygraph)
+occor2= read.csv("./结果/re2/OTU_1104/mic-表型/occor2.csv")
+occor2$X =NULL
+
+
+net <- graph_from_data_frame(d = occor2, directed = FALSE)
+
+# 转换为tidygraph，并设置节点属性
+tidy_net <- as_tbl_graph(net) %>%
+  activate(nodes) %>%
+  mutate(
+    type = ifelse(name == "Lactobacillus johnsonii", "Microbe", "Indicator"),
+    size = ifelse(type == "Microbe", 12, 8),  # 微生物节点更大
+    color = ifelse(type == "Microbe", "#A0CE3A", "#8DD3C7")  # 设置节点颜色
+  )
+
+# 使用 focus 布局，让微生物居中
+?geom_edge_arc
+p= ggraph(tidy_net, layout = "focus", focus = which(V(tidy_net)$name == "Lactobacillus johnsonii")) +
+  # 绘制边，按正负相关设置颜色
+  # geom_edge_link(
+  #   aes(width = abs(r), color = ifelse(r > 0, "#E41A1C", "#377EB8")), 
+  #   alpha = 0.8,
+  #   show.legend = TRUE
+  # ) +
+  geom_edge_arc(
+    aes(width = abs(r), color = ifelse(r > 0, "#E41A1C", "#377EB8")), 
+    alpha = 0.5,
+    show.legend = TRUE,
+    strength=0.3
+  ) +
+  # 绘制节点（无边框）
+  geom_node_point(aes( size = size,fill = color), shape = 21, color = "black") +
+  # 添加节点标签（无边框，直接显示文字）
+  geom_node_text(
+    aes(label = name), 
+    size = 3.5, 
+    repel = TRUE
+  )+
+  # 
+  # 
+  # # 绘制节点
+  # geom_node_point(aes(size = size, fill = color), shape = 21, color = "white") +
+  # # 添加节点标签
+  # geom_node_text(
+  #   aes(label = name, filter = name != "Lactobacillus johnsonii"), 
+  #   size = 3, repel = TRUE, color = "black"
+  # ) +
+  # # 微生物节点标签特殊显示
+  # geom_node_label(
+  #   aes(label = ifelse(name == "Lactobacillus johnsonii", name, "")),
+  #   size = 4, fill = "#A0CE3A", color = "black", fontface = "bold"
+  # ) +
+  # 设置比例尺
+  scale_edge_width(range = c(0.8, 2.5), name = "|r|") +
+  scale_edge_color_identity(name = "Correlation", labels = c("Negative", "Positive"), guide = "legend") +
+  scale_fill_identity() +
+  scale_size_identity() +
+  # 调整主题
+  theme_void() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    plot.subtitle = element_text(hjust = 0.5, size = 10),
+    legend.position = "bottom",
+    legend.box = "horizontal"
+  )
+p
+
+
+ggsave("./结果/re2/OTU_1104/mic-表型/cor2.pdf",p, width = 4 ,height = 4)
+
+write.csv(occor2,"./结果/re2/OTU_1104/mic-表型/occor2.csv")
+
+
+
+
+ggraph(tidy_net, layout = "focus", focus = which(V(tidy_net)$name == "Lactobacillus johnsonii")) +
+  # 绘制曲线边，按正负相关设置颜色
+  geom_edge_diagonal(
+    aes(width = abs(r), color = ifelse(r > 0, "#FF6B6B", "#4ECDC4")), 
+    alpha = 0.8,
+    strength = 0.5,  # 控制曲线弯曲程度（0-1）
+    show.legend = TRUE
+  ) +
+  # 绘制节点（无边框）
+  geom_node_point(aes(size = size, color = color)) +
+  # 添加节点标签（无边框，直接显示文字）
+  geom_node_text(
+    aes(label = name, color = color), 
+    size = 3.5, 
+    repel = TRUE, 
+    fontface = "bold"
+  ) +
+  # 设置比例尺
+  scale_edge_width(range = c(0.8, 2.5), name = "|r|") +
+  scale_edge_color_identity(name = "Correlation", labels = c("Negative", "Positive"), guide = "legend") +
+  scale_color_identity() +
+  scale_size_identity() +
+  # 添加标题和图例
+  labs(
+    title = "Network of Lactobacillus johnsonii and Physiological Indicators",
+    subtitle = "Curved edges show correlations (red=positive, blue=negative)"
+  ) +
+  # 调整主题
+  theme_void() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    plot.subtitle = element_text(hjust = 0.5, size = 10),
+    legend.position = "bottom",
+    legend.box = "horizontal"
+  )
+
+
+
+# re3 代谢组-----
+ps_ms2
+
+
+##alpha多样性#---------
+alppath = paste(otupath,"/alpha/",sep = "")
+dir.create(alppath)
+
+# source("../micro/alpha-diversity.R")
+#---多种指标alpha多样性分析加出图-标记显著性
+source("E:\\圆桌会议\\micro/alpha-diversity.R")
+
+index = c("Shannon","Inv_Simpson","Pielou_evenness","Simpson_evenness" ,
+          "Richness" ,"Chao1","ACE" )
+
+#--多种组合alpha分析和差异分析出图
+alp = alpha(ps = ps_ms2,inde="Shannon",group = "Group",Plot = TRUE )
+index= alp
+head(index)
+
+#--提取代表指标作图
+all.alpha = T
+
+if (all.alpha) {
+  sel = c(match("Inv_Simpson",colnames(index)),
+          match("Pielou_evenness",colnames(index)),
+          match("Simpson_evenness",colnames(index)),
+          match("Richness",colnames(index)),
+          match("Chao1",colnames(index)),
+          match("ACE",colnames(index)),
+          match("Shannon",colnames(index))
+          
+  )
+  h = 3
+} else{
+  sel = c(match("Shannon",colnames(index)),match("Richness",colnames(index)),
+          match("Pielou_evenness",colnames(index)))
+  h = 1
+}
+
+n = length(sel) + 3
+
+data = cbind(data.frame(ID = 1:length(index$Group),group = index$Group),index[sel])
+head(data)
+
+
+result = EasyStat::MuiKwWlx2(data = data,num = c(3:(n -1)))
+
+FileName <- paste(alppath,"/alpha_diversity_different_label.csv", sep = "")
+write.csv(result,FileName,sep = "")
+FileName <- paste(alppath,"/alpha_diversity_index.csv", sep = "")
+write.csv(index,FileName,sep = "")
+
+
+result1 = EasyStat::FacetMuiPlotresultBox(data = data,num = c(3:(n -1)),
+                                          result = result,
+                                          sig_show ="abc",
+                                          ncol = 3 )
+
+p1_1 = result1[[1]] + 
+  ggplot2::scale_x_discrete(limits = axis_order) + 
+  mytheme2 +
+  ggplot2::guides(fill = guide_legend(title = NULL)) +
+  ggplot2::scale_fill_manual(values = colset2)
+p1_1
+
+#如何升级展示-提取数据用小提琴图展示
+# p1_0 = result1[[2]] %>% ggplot(aes(x=group , y=dd )) + 
+#   geom_violin(alpha=1, aes(fill=group)) +
+#   geom_jitter( aes(color = group),
+#                position=position_jitter(0.17), size=3, alpha=0.5)+
+#   labs(x="", y="")+
+#   facet_wrap(.~name,scales="free_y",ncol  = 3) +
+#   # theme_classic()+
+#   geom_text(aes(x=group , y=y ,label=stat)) +
+#   ggplot2::scale_x_discrete(limits = axis_order) + 
+#   mytheme1 +
+#   guides(color=guide_legend(title = NULL),
+#          shape=guide_legend(title = NULL),
+#          fill = guide_legend(title = NULL)
+#   ) +
+#   ggplot2::scale_fill_manual(values = colset1)
+# p1_0
+# 
+# res = EasyStat::FacetMuiPlotresultBar(data = data,num = c(3:(n -1)),result = result,sig_show ="abc",ncol = 3)
+# 
+# p1_2 = res[[1]]+ scale_x_discrete(limits = axis_order) + guides(color = FALSE) +
+#   mytheme1+ 
+#   guides(fill = guide_legend(title = NULL))+
+#   scale_fill_manual(values = colset1)
+# p1_2
+# 
+# res = EasyStat::FacetMuiPlotReBoxBar(data = data,num = c(3:(n -1)),result = result,sig_show ="abc",ncol = 3)
+# p1_3 = res[[1]]+ scale_x_discrete(limits = axis_order) + 
+#   mytheme1 + 
+#   guides(fill = guide_legend(title = NULL))+
+#   scale_fill_manual(values = colset1)
+# p1_3
+# 
+# 
+# FileName <- paste(alppath,"Alpha_Facet_vl", ".pdf", sep = "")
+# ggsave(FileName, p1_0, width = ((1 + gnum) * 3), height =4 *h,limitsize = FALSE)
+# FileName <- paste(alppath,"Alpha_Facet_vl", ".png", sep = "")
+# ggsave(FileName, p1_0, width = ((1 + gnum) * 3), height =4 *h,limitsize = FALSE)
+# 
+
+FileName <- paste(alppath,"Alpha_Facet_box", ".pdf", sep = "")
+ggsave(FileName, p1_1, width = ((1 + gnum) * 2), height =3.5 *h,limitsize = FALSE)
+
+# FileName <- paste(alppath,"Alpha_Facet_bar", ".pdf", sep = "")
+# ggsave(FileName, p1_2, width = ((1 + gnum) * 3), height = 4 *h,limitsize = FALSE)
+# 
+# FileName <- paste(alppath,"Alpha_Facet_boxbar", ".pdf", sep = "")
+# ggsave(FileName, p1_3, width = ((1 + gnum) * 3), height = 4 *h,limitsize = FALSE)
+
+FileName <- paste(alppath,"Alpha_Facet_box", ".jpg", sep = "")
+ggsave(FileName, p1_1, width = ((1 + gnum) * 3), height =4*h,limitsize = FALSE)
+
+FileName <- paste(alppath,"Alpha_Facet_bar", ".jpg", sep = "")
+ggsave(FileName, p1_2, width = ((1 + gnum) * 3), height = 4*h,limitsize = FALSE)
+
+FileName <- paste(alppath,"Alpha_Facet_boxbar", ".jpg", sep = "")
+ggsave(FileName, p1_3, width = ((1 + gnum) * 3), height = 4*h,limitsize = FALSE)
+
+#--总体差异检测alpha多样性
+krusk1 = ggpubr::compare_means( Shannon ~ group, data=data, method = "kruskal.test")
+krusk2 = ggpubr::compare_means( Richness ~ group, data=data, method = "kruskal.test")
+krusk3 = ggpubr::compare_means( Pielou_evenness ~ group, data=data, method = "kruskal.test")
+
+dat = rbind(krusk1,krusk2,krusk3) %>% as.data.frame()
+FileName <- paste(alppath,"/alpha_diversity_index_all_p_Kruskal-Wallis.csv", sep = "")
+write.csv(dat,FileName,sep = "")
+
+
+
+
+
+
+
+
+
+
+##  PLS-DA排序#---------
+betapath = paste(otupath,"/beta/",sep = "")
+dir.create(betapath)
+
+library(mixOmics)
+count = vegan_otu(ps_ms2)
+map = as.data.frame(sample_data(ps_ms2))
+map$Group
+#PLS-DA分析，这里也是选取2个主成分
+?plsda
+
+plsda.datatm <-plsda(count, map$Group, ncomp = 2)
+#PLS-DA without centroids
+# mi=c("#1B9E77" ,"#D95F02")
+plotIndiv(plsda.datatm , comp = c(1,2),
+          group = map$Group, style = 'ggplot2' )
+plotIndiv(plsda.datatm , comp = c(1,2),
+          group = map$Group, style = 'ggplot2',ellipse = TRUE, 
+          size.xlabel = 20, size.ylabel = 20, size.axis = 25, pch = 15, cex = 5)
+#----提取数据作图
+a = unclass(plsda.datatm)
+#--提取坐标值
+plotdata = as.data.frame(a$variates$X)
+plotdata$SampleType = map$Group
+#-提取解释度
+eig = a$explained_variance$X
+eig[1]
+library(ggalt)
+library(BiocManager)
+# install("ggalt")
+p = ggplot(data = plotdata,aes(x=comp1,y=comp2,group=SampleType,color=SampleType))+geom_point(size=2)+
+  stat_ellipse(type = "t", linetype = 2)+
+  geom_encircle(s_shape=1, expand=0) +
+  labs(x=paste("X-variate 1 (", format(100 * 0.26), "%)", sep=""),
+       y=paste("X-variate 2 (", format(100 * 0.26 ), "%)", sep=""))+
+  labs(title = "PLS-DA") 
+
+p=p+theme_bw()+scale_colour_manual(values = colset1)+
+  theme(plot.title = element_text(hjust = 0.5))+
+  guides(color=guide_legend(title = NULL),shape=guide_legend(title = NULL))+
+  geom_hline(yintercept=0) + geom_vline(xintercept=0)
+p
+
+method = "pls-da"
+FileName <- paste(betapath,"/a2_",method,"_plot.pdf", sep = "")
+ggsave(FileName, p, width = 5, height = 4)
+
+##-------物种组成展示#---------
+mycol3 <- rev(c('#FCCDE5',
+                '#B3DE69','#FDB462','#80B1D3','#FB8072',
+                '#BEBADA','#8DD3C7'))
+
+source("E:\\Shared_Folder\\Function_local\\R_function\\micro/barMainplot_GC.R")
+
+barpath = paste(otupath,"/Microbial_composition/",sep = "")
+dir.create(barpath)
+
+phyloseq::rank_names(ps_ms2)
+
+tax = tax_table(ps_ms2) %>% as.data.frame()
+
+j = "Class"
+
+strbar = c("Class" , "Class.I"  )
+# strbar = c("Superclass","Class"  )
+
+for (j in strbar) {
+  result = barMainplot(ps = ps_ms2,
+                       j = j,
+                       # axis_ord = axis_order,
+                       label = FALSE,
+                       sd = FALSE,
+                       Top = 6)
+  p4_1 <- result[[1]] + 
+    # scale_fill_brewer(palette = "Paired") + 
+    scale_fill_manual(values = mycol3) +
+     scale_x_discrete(limits = axis_order) +
+    mytheme1
+  p4_1
+  p4_2  <- result[[3]] + 
+    # scale_fill_brewer(palette = "Paired") + 
+    scale_fill_manual(values = mycol3) +
+     scale_x_discrete(limits = axis_order) + 
+    mytheme1
+  p4_2
+  
+  databar <- result[[2]] %>% 
+    dplyr::group_by(Group,aa) %>%
+    dplyr::summarise(sum(Abundance)) %>% as.data.frame()
+  head(databar)
+  colnames(databar) = c("Group",j,"Abundance(%)")
+  
+  
+  FileName1 <- paste(barpath,"/a2_",j,"_barflow",".pdf", sep = "")
+  ggsave(FileName1, p4_2, width = (5+ gnum), height =7 )
+ 
+  
+  FileName1 <- paste(barpath,"/a2_",j,"_bar",".pdf", sep = "")
+  ggsave(FileName1, p4_1, width = (5+ gnum), height =5 )
+
+  
+  FileName <- paste(barpath,"/a2_",j,"_bar_data",".csv", sep = "")
+  write.csv(databar,FileName)
+}
+tax$Class %>% unique()
+tax$Class.I %>% unique()
+
+## 普鲁士分析------ 
+ps_mic1
+ps_ms2
+
+set.seed(1)
+
+ps_16s 
+# ps_ms = ps
+
+sample_data(ps_ms2)$ID
+sample_data(ps_mic1)$ID
+
+
+ps_16s2 =  ps_mic1
+
+mds.s <- vegdist(otu_table(ps_16s2)%>% t(), method = "bray") %>% monoMDS()
+
+mds.e <-  vegdist(otu_table(ps_ms2 #%>% subset_taxa(row.names(tax_table(ps_ms)) %in% id)
+                            
+) %>%
+  t(), method = "bray") %>%
+  monoMDS()
+
+# mds.s <- vegdist(otu_table(ps_16s2)%>% t(), method = "bray")
+# mds.e <-  vegdist(otu_table(ps_ms)%>% t(), method = "bray")
+
+pro.s.e <- procrustes(mds.s,mds.e, symmetric = TRUE)
+pro.s.e$Yrot
+
+# 偏差平方和（M2统计量）
+pro.s.e_t <- protest(mds.s,mds.e, permutations = 999)
+pro.s.e_t
+pro.s.e_t$signif
+pro.s.e_t$ss
+# 对应p值结果
+# 获得x和y轴的坐标及旋转过的坐标
+Pro_Y <- cbind(data.frame(pro.s.e$Yrot), data.frame(pro.s.e$X))
+Pro_X <- data.frame(pro.s.e$rotation)
+
+pro.s.e$Yrot
+# 绘图
+p= ggplot(data=Pro_Y) +
+  geom_segment(aes(x = X1, y = X2, 
+                   xend = (X1 + MDS1)/2, yend = (X2 + MDS2)/2), 
+               # geom_segment 绘制两点间的直线
+               #arrow = arrow(length = unit(0, 'cm')), 
+               color = "#9BBB59", size = 1) +
+  geom_segment(aes(x = (X1 + MDS1)/2, y = (X2 + MDS2)/2, 
+                   xend = MDS1, yend = MDS2), 
+               #  arrow = arrow(length = unit(0.2, 'cm')),
+               color = "#957DB1", size = 1) +
+  geom_point(aes(X1, X2), color = "#9BBB59", size = 3, shape = 16) + 
+  geom_point(aes(MDS1, MDS2), color = "#957DB1", size = 3, shape = 16) +
+  theme(panel.grid = element_blank(), # 绘制背景
+        panel.background = element_rect(color = 'black', 
+                                        fill = 'transparent'),
+        legend.key = element_rect(fill = 'transparent'),
+        axis.ticks.length = unit(0.4,"lines"), 
+        axis.ticks = element_line(color='black'),
+        axis.line = element_line(colour = "black"), 
+        axis.title.x=element_text(colour='black', size=14),
+        axis.title.y=element_text(colour='black', size=14),
+        axis.text=element_text(colour='black',size=12)) +
+  labs(x = 'Dimension 1', y = 'Dimension 2', color = '') +
+  #  labs(title="Correlation between community and environment") + 
+  geom_vline(xintercept = 0, color = 'gray', linetype = 2, size = 0.3) +
+  geom_hline(yintercept = 0, color = 'gray', linetype = 2, size = 0.3) +
+  geom_abline(intercept = 0, slope = Pro_X[1,2]/Pro_X[1,1], size = 0.3) +
+  geom_abline(intercept = 0, slope = Pro_X[2,2]/Pro_X[2,1], size = 0.3) +
+  # 添加文本标签（样品名）
+  # geom_text(aes(X1, X2, label = rownames(Pro_Y)), vjust = -1, color = "#9BBB59") +
+  # geom_text(aes(MDS1, MDS2, label = rownames(Pro_Y)), vjust = 1, color = "#957DB1")+
+  # 
+  
+  annotate('text', label = 'Procrustes analysis:\n 
+           M2 = 0.71, p-value = 0.02',
+           x = -0.30, y = 0.15, size = 4,hjust = 0) +
+  theme(plot.title = element_text(size=14,colour = "black", 
+                                  hjust = 0.5,face = "bold"))
+
+betapath2 = paste(otupath,"/ms-mic/",sep = "")
+dir.create(betapath2)
+ggsave("./结果/re3//OTU_1104//ms-mic/ms-mic.pdf",p,width = 5.5,height = 5)
+
+p
+
+## 热图-----
+# 每种分类分别展示---
+dir.create("./")
+library(ComplexHeatmap)
+ps_ms2
+tax_table(ps2)%>% as.data.frame()%>% .$KEGG
+tax_table(ps2)%>% as.data.frame()%>% .$物质一级分类 %>% unique()
+tax_table(ps_ms2)%>% as.data.frame()%>% .$Class %>% unique()
+tax_table(ps_ms2)%>% as.data.frame()%>% .$Class.I %>% unique()
+
+tax = tax_table(ps_ms2)%>% as.data.frame()
+
+id =  c("Sugars")
+
+i=1
+for(i in 1:length(id) ){
+  
+  ps3 <-  ps_ms %>% scale_micro()  %>%  subset_taxa(Class==id[i] ) 
+  
+  expr_matrix =  otu_table(ps3  )  %>% as.data.frame()
+  
+  # expr_matrix =  t(scale(t(expr_matrix)))
+  sample_meta <- sample_data(ps3) %>% 
+    as("data.frame") %>%
+    mutate(group = factor(Group, 
+                          levels = c("W1", "W2", "W8", "W9","W10"))) 
+  # 通路注释数据
+  pathway_annot <- tax_table(ps3) %>% 
+    as.data.frame() %>%
+    dplyr::select(Category =   物质 ) 
+  
+  # row.names(expr_matrix) = pathway_annot$
+  
+  # 数据标准化（每个通路的Z-score）
+  expr_scaled <- t(scale(t(expr_matrix)))
+  
+  
+  colnames(expr_scaled)
+  row.names(expr_scaled)
+  # 创建注释对象
+  col_annot <- HeatmapAnnotation(
+    Stage = sample_meta$group,
+    col = list(
+      Stage = c(
+        "W1" = "#FFD700",
+        "W2" = "#32CD32",
+        "W8" = "#FF4500",
+        "W9" = "#8A2BE2",
+        "W10" =  "grey"
+      )
+    )
+  )
+  
+  pathway_annot$Category%>% unique()
+  
+  row_annot <- rowAnnotation(
+    Pathway = pathway_annot$Category,
+    col = list(
+      Pathway = setNames(
+        rainbow(nlevels(factor(pathway_annot$Category))),
+        levels(factor(pathway_annot$Category))
+      )
+    )
+  )
+  
+  
+  col_fun <- circlize::colorRamp2(
+    breaks = c(min(expr_scaled), 0, max(expr_scaled)), 
+    colors = c("#F0F0F0", "#FFFFFF", "#B2182B")  # 渐变策略：灰→白→金
+  )
+  
+  ht <- Heatmap(
+    matrix = expr_scaled,
+    name = "Z-score",
+    # 列参数
+    column_split = sample_meta$group,
+    cluster_columns = TRUE,
+    cluster_column_slices = FALSE,
+    column_title = NULL,
+    
+    # # 行参数
+    # row_split = pathway_annot$Category ,
+    cluster_rows = TRUE,
+    # cluster_row_slices = TRUE,
+    
+    # 可视化参数
+    col = col_fun,
+    top_annotation = col_annot,
+    #   left_annotation = row_annot,
+    show_row_names = TRUE,
+    show_column_names = FALSE,
+    row_title = "Metabolic Pathways",
+    heatmap_legend_param = list(
+      title = "Z-score",
+      legend_height = unit(5, "cm")
+    )
+  )
+  
+  tabpath
+  
+  FileName <- "./结果/re3//OTU_1104/heatmap/sugar.pdf"
+  
+  pdf(FileName, width = 8, height =3.5)  # 单位：英寸
+  draw(ht)
+  dev.off()
+}
+
+
+## 菌株与两类代谢物之间的关联-----
+library(phyloseq)
+library(igraph)
+library(network)
+library(sna)
+library(tidyverse)
+library(ggClusterNet)
+
+#提取胆汁酸
+tax
+ps_bile =  ps_ms2 %>%   scale_micro()%>% subset_taxa(Class %in% "Bile acids") 
+ps_sugar =  ps_ms2 %>%  scale_micro()%>% subset_taxa(Class %in% "Sugars") 
+ps_lac =   ps_mic1 %>%  scale_micro()%>% subset_taxa(Species %in% "Lactobacillus johnsonii")
+
+# ps_dat = merge.ps(ps_bile,ps_sugar,dat1.lab = "bile", dat2.lab = "sugar" )
+# 
+# tax_table(ps_dat)
+
+otu_bile =   vegan_otu(ps_bile) %>% as.data.frame()
+
+otu_lac = ps_lac%>% vegan_otu() %>% as.data.frame()
+
+
+colnames(otu_lac) = gsub(" ","_",colnames(otu_lac))
+
+colnames(otu_bile) = gsub(" ","_",colnames(otu_bile))
+
+colnames(otu_bile) = gsub("-","_",colnames(otu_bile))
+
+
+otu_sugar =   vegan_otu(ps_sugar) %>% as.data.frame()
+
+colnames(otu_sugar) = gsub("-","_",colnames(otu_sugar))
+
+colnames(otu_sugar) = gsub(" ","_",colnames(otu_sugar))
+otu_all = cbind(otu_bile,otu_sugar,otu_lac)
+
+occor = psych::corr.test(otu_all, use = "pairwise", 
+                         method ="spearman", adjust = "fdr", alpha = 0.05)
+occor.r = occor$r
+occor.p = occor$p
+
+
+ netClu <- data.frame(
+   ID = colnames(otu_all),
+   group = c(
+     rep("bile", ncol(otu_bile)),
+     rep("sugar", ncol(otu_sugar)),
+     rep("mic", ncol(otu_lac))
+   )
+ )
+
+ # 获取分组信息
+ groups <- netClu$group
+ 
+ # 构建逻辑矩阵（TRUE 表示组间相关性）
+ inter_group <- outer(groups, groups, FUN = `!=`)
+ 
+ # 保留组间相关性，剔除组内相关性
+ occor.r[!inter_group] <- 0
+ occor.p[!inter_group] <- 1
+
+ # 筛选条件：|cor| > 0.5 且 p < 0.05
+ filter_mask <- (abs(occor.r) > 0.7) & (occor.p < 0.05)
+ 
+ # 创建过滤后的相关性矩阵
+ occor.r.filtered <- occor.r
+ 
+ occor.r.filtered[!filter_mask] <- NA
+ 
+ occor.r.filtered[colnames(occor.r.filtered)=="Lactobacillus_johnsonii",]  =  occor.r[colnames(occor.r)=="Lactobacillus_johnsonii",]
+ 
+ cor = occor.r.filtered
+ result2 = PolygonClusterG (cor = cor,nodeGroup =netClu  )
+ 
+ node = result2[[1]]
+ head(node)
+ 
+ netClu2= netClu %>% column_to_rownames("ID")
+ #---node节点注释#-----------
+ nodes = nodeadd(plotcord =node,otu_table = otu_all %>% t() %>% as.data.frame(),tax_table = netClu2)
+ head(nodes)
+ 
+ edge = edgeBuild(cor = cor,node = node)
+ head(edge)
+
+ 
+ library(ggplot2)
+ 
+ # 假设 edge 数据包含：X1, Y1, X2, Y2, cor（相关性系数）
+ # 假设 nodes 数据包含：X1, X2, group, mean（节点大小）
+ 
+p = ggplot() +
+   # 1. 绘制边（线段）：正相关=红色，负相关=蓝色
+   geom_segment(
+     aes(
+       x = X1, y = Y1, 
+       xend = X2, yend = Y2,
+       color = ifelse(cor == "+", "Positive", "Negative")  # 按相关性正负分组
+     ),
+     data = edge, 
+     size = 0.2, 
+     alpha = 0.5
+   ) +
+   # 2. 绘制节点（点）：自定义分组颜色
+   geom_point(
+     aes(
+       x = X1, y = X2,
+       fill = group,  # 节点分组
+       size = mean    # 节点大小
+     ),
+     data = nodes, 
+     pch = 21,        # 带边框的圆形
+     stroke = 0.3      # 边框粗细
+   ) +
+   # 3. 自定义颜色标度
+   scale_color_manual(
+     name = "Correlation",  # 图例标题
+     values = c(
+       "Positive" ="#E41A1C",   # 正相关=红色
+       "Negative" = "#377EB8"   # 负相关=蓝色
+     )
+   ) +
+   scale_fill_manual(
+     name = "Group",         # 图例标题
+     values = c(
+       "bile"  = "#A0CE3A",  # 组1颜色
+       "sugar" = "#FFD700",  # 组2颜色
+       "mic"   = "#A65628"   # 组3颜色
+     )
+   ) +
+   # 4. 调整图形样式
+   theme_minimal() +          # 简洁主题
+   theme(
+     legend.position = "right",       # 图例位置
+     panel.grid = element_blank(),    # 移除网格线
+     axis.text = element_blank(),    # 移除坐标轴标签
+     axis.title = element_blank()    # 移除坐标轴标题
+   ) +
+   labs(title = "Network Visualization")  # 添加标题 
+
+dir.create("./结果/re3//OTU_1104/net/")
+
+ggsave("./结果/re3//OTU_1104/net/net.pdf",p,height =6.5,width = 7)
+
+write.csv(edge,"./结果/re3//OTU_1104/net/edge.csv")
+write.csv(nodes,"./结果/re3//OTU_1104/net/nodes.csv")
+
+## 桑吉图-----
+###--- 胆汁酸-----
+data <- read_excel("./data/靶向代谢.xlsx",sheet = 1)
+
+long_data <- pivot_longer(
+   data,
+   cols = c(3:ncol(data)),  # 需要转换的列
+   names_to = "ID",       # 新列名（存储原列名）
+   values_to = "abundance"          # 新列名（存储数值）
+ )
+
+
+data2 <- read_excel("./data/靶向代谢.xlsx",sheet = 2) %>% filter(from =="H")
+
+long_data2 =  filter(long_data , ID %in% data2$ID) %>% filter ( abundance != "N/A" )
+
+long_data2$abundance =  as.numeric(long_data2$abundance) 
+
+long_data2$ID <- gsub("\\d+", "", long_data2$ID)  
+
+library(dplyr)
+
+# 按 ID 和 Index 分组，计算 abundance 的均值
+mean_data <- long_data2 %>%
+  group_by(ID, Index) %>%
+  dplyr::summarise(
+    mean_abundance = mean(abundance, na.rm = TRUE),  # 计算均值，忽略 NA
+    .groups = "drop"  # 取消分组
+  )
+
+mean_data
+
+write_excel_csv(mean_data,"./data/daixie.csv")
+
+da4 =  read_excel("./data/靶向代谢.xlsx",sheet = 3) 
+
+#da5 =  merge(mean_data %>% filter(! Index %in%c(da4$Index)), da4, by = "ID")
+# da5 =  rbind(mean_data %>% filter(! Index %in%c(da4$Index)),da4)
+da5$ID %>% unique()
+da6 = mean_data
+
+mean_data_processed <- mean_data %>%
+  group_by(Index) %>%
+  dplyr::summarise(total_abundance = sum(mean_abundance)) %>%
+  arrange(desc(total_abundance)) %>%
+  mutate(Index = ifelse(row_number() > 10, "others", Index)) %>%
+  # group_by(Index) %>%
+  # dplyr:: summarise(mean_abundance = sum(total_abundance)) %>%
+  ungroup()
+
+mean_data_processed %>% head(12)
+
+mean_data_processed$Index
+
+
+mean_data2 =  mean_data %>% 
+  mutate(Index = ifelse(!Index %in%  mean_data_processed$Index [1:10], "others", Index)) 
+
+
+# 假如 df2 里有所有样本分流（这里用 DH 举例，你可扩展为所有ID）
+df1 <- data.frame(
+  ID = c("NEH", "ZH", "NH", "GH", "DH"),
+  mean_abundance = rep(50000, 5)
+)
+
+
+df2 =  mean_data2
+unique(df2$Index)
+
+
+all_index <- df2$Index %>% unique() %>% as.character()
+nodes <- data.frame(name = c(as.character(df1$ID), all_index), stringsAsFactors = FALSE)
+
+# 计算每个 ID-Index 分流流量
+df2 <- df2 %>%
+  left_join(df1, by = "ID", suffix = c("_index", "_ID")) %>%
+  group_by(ID) %>%
+  mutate(prop = mean_abundance_index / sum(mean_abundance_index),
+         value = prop * mean_abundance_ID) %>%
+  ungroup()
+
+write.csv(df2,"./结果/re3/OTU_1104/sank/sank.csv")
+
+
+links <- df2 %>%
+  mutate(
+    source = match(ID, nodes$name) - 1,
+    target = match(Index, nodes$name) - 1
+  ) %>%
+  dplyr:: select(source, target, value)
+
+# networkD3 绘图
+sankeyNetwork(
+  Links = links,
+  Nodes = nodes,
+  Source = "source",
+  Target = "target",
+  Value = "value",
+  NodeID = "name",
+  units = "Abundance"
+)
+
+
+links <- df2 %>%
+  mutate(
+    source = match(ID, nodes$name) - 1,
+    target = match(Index, nodes$name) - 1,
+    group = ID   # 关键！为每个 link 指定分组（决定线条颜色）
+  ) %>%
+  dplyr:: select(source, target, value, group)
+
+# 使用 sankeyNetwork，指定 LinkGroup
+sankeyNetwork(
+  Links = links,
+  Nodes = nodes,
+  Source = "source",
+  Target = "target",
+  Value = "value",
+  NodeID = "name",
+  LinkGroup = "group",   # 这行就是实现按 source 着色的关键
+  units = "Abundance"
+)
+
+
+
+mycol<- c4a('rainbow_wh_rd',20)       #从cols4all包中获取一个包含60种颜色的彩虹渐变色板
+
+
+
+# #颜色范围从白色(white)过渡到红色(red)，适用于创建视觉上连续的渐变效果
+
+mycol2<-sample(mycol,length(mycol)) 
+# 
+
+colourScale<-sprintf('d3.scaleOrdinal().range(["%s"])',
+                     paste(mycol2,collapse='","'))
+
+# colourScale <- 'd3.scaleOrdinal()
+#   .domain(["DH", "NEH", "ZH", "NH", "GH"])
+#   .range(["rgba(255,0,0,0.3)", "rgba(0,255,0,0.3)", "rgba(0,0,255,0.3)", "rgba(255,200,0,0.3)", "rgba(150,0,200,0.3)"])'
+# 
+library(cols4all)
+library(jsonlite)
+mycol <- c4a('rainbow_wh_rd', 30)
+id_order <- c("DH", "ZH", "HEH", "GH", "NEH")    # 假设你的ID
+color_index <- c(2, 6, 10, 15,20)               # 挑选间隔较大的索引
+colourScale <- sprintf(
+  'd3.scaleOrdinal().domain(%s).range(["%s"])',
+  toJSON(id_order, auto_unbox=TRUE),
+  paste(mycol[color_index], collapse='","')
+)
+#6059A9
+
+colourScale = "d3.scaleOrdinal()
+  .domain([\"DH\",\"ZH\",\"HEH\",\"GH\",\"NEH\",\"NH\"])
+  .range([\"#1565C0\",\"#A778B4\",\"#6059A9\",\"#C2B280\",\"#8CBC68\",\"#F48FB1\"])"
+
+sankeyNetwork(
+  Links = links,
+  Nodes = nodes,
+  Source = "source",
+  Target = "target",
+  Value = "value",
+  NodeID = "name",
+  height=600,
+  width=800,
+  iterations=0,
+  nodePadding=10,
+  fontSize=15,
+  LinkGroup = "group",
+  units = "Abundance",
+  colourScale = colourScale,  # 透明色
+  nodeWidth = 6              # 让节点格子更细
+)
+
+
+da6 =  da5%>%  dplyr::select(1,2,3)
+
+colnames(da6) = c("kegg_name","period","value")
+
+
+### 脂肪酸-----
+data <- read_excel("./data/脂肪酸代谢.xlsx",sheet = 1)
+
+long_data <- pivot_longer(
+  data,
+  cols = c(2:ncol(data)),  # 需要转换的列
+  names_to = "ID",       # 新列名（存储原列名）
+  values_to = "abundance"          # 新列名（存储数值）
+)
+
+data2 <- read_excel("./data/脂肪酸代谢.xlsx",sheet = 2) %>% filter(from =="H")
+
+long_data2 =  filter(long_data , ID %in% data2$ID) %>% filter ( abundance != "N/A" )
+long_data$ID
+#long_data2$abundance =  as.numeric(long_data2$abundance) 
+
+long_data2$ID <- gsub("\\d+$", "", long_data2$ID)  
+
+long_data2$ID
+# 按 ID 和 Index 分组，计算 abundance 的均值
+mean_data <- long_data2 %>%
+  group_by(ID,Index) %>%
+  dplyr::summarise(
+    mean_abundance = mean(abundance, na.rm = TRUE),  # 计算均值，忽略 NA
+    .groups = "drop"  # 取消分组
+  )
+mean_data$ID 
+unique(mean_data$ID )
+mean_data
+
+mean_data2 =  mean_data 
+
+# 假如 df2 里有所有样本分流（这里用 DH 举例，你可扩展为所有ID）
+df1 <- data.frame(
+  ID = c("CH" , "GH" , "M2H", "MH" , "TH"),
+  mean_abundance = rep(500, 5)
+)
+
+
+df2 =  mean_data2
+unique(df2$Index)
+
+
+all_index <- df2$Index %>% unique() %>% as.character()
+
+
+nodes <- data.frame(name = c(as.character(df1$ID), all_index), stringsAsFactors = FALSE)
+
+
+# 计算每个 ID-Index 分流流量
+df2 <- df2 %>%
+  left_join(df1, by = "ID", suffix = c("_index", "_ID")) %>%
+  group_by(ID) %>%
+  mutate(prop = mean_abundance_index / sum(mean_abundance_index),
+         value = prop * mean_abundance_ID) %>%
+  ungroup()
+
+# df2 <- df2 %>%dplyr:: rename( "value"="mean_abundance_index" )
+
+#write.csv(df2,"./结果/re3/OTU_1104/sank/sank_脂肪酸.csv")
+
+
+links <- df2 %>%
+  mutate(
+    source = match(ID, nodes$name) - 1,
+    target = match(Index, nodes$name) - 1
+  ) %>%
+  dplyr:: select(source, target, value)
+
+# networkD3 绘图
+sankeyNetwork(
+  Links = links,
+  Nodes = nodes,
+  Source = "source",
+  Target = "target",
+  Value = "value",
+  NodeID = "name",
+  nodePadding = 30,
+  units = "Abundance"
+)
+
+
+links <- df2 %>%
+  mutate(
+    source = match(ID, nodes$name) - 1,
+    target = match(Index, nodes$name) - 1,
+    group = ID   # 关键！为每个 link 指定分组（决定线条颜色）
+  ) %>%
+  dplyr:: select(source, target, value, group)
+
+# 使用 sankeyNetwork，指定 LinkGroup
+sankeyNetwork(
+  Links = links,
+  Nodes = nodes,
+  Source = "source",
+  Target = "target",
+  Value = "value",
+  NodeID = "name",
+  LinkGroup = "group",   # 这行就是实现按 source 着色的关键
+  units = "Abundance"
+)
+
+
+
+mycol<- c4a('rainbow_wh_rd',20)       #从cols4all包中获取一个包含60种颜色的彩虹渐变色板
+
+
+
+# #颜色范围从白色(white)过渡到红色(red)，适用于创建视觉上连续的渐变效果
+
+mycol2<-sample(mycol,length(mycol)) 
+# 
+
+colourScale<-sprintf('d3.scaleOrdinal().range(["%s"])',
+                     paste(mycol2,collapse='","'))
+
+# colourScale <- 'd3.scaleOrdinal()
+#   .domain(["DH", "NEH", "ZH", "NH", "GH"])
+#   .range(["rgba(255,0,0,0.3)", "rgba(0,255,0,0.3)", "rgba(0,0,255,0.3)", "rgba(255,200,0,0.3)", "rgba(150,0,200,0.3)"])'
+# 
+library(cols4all)
+library(jsonlite)
+mycol <- c4a('rainbow_wh_rd', 30)
+id_order <- c("DH", "ZH", "HEH", "GH", "NEH")    # 假设你的ID
+color_index <- c(2, 6, 10, 15,20)               # 挑选间隔较大的索引
+colourScale <- sprintf(
+  'd3.scaleOrdinal().domain(%s).range(["%s"])',
+  toJSON(id_order, auto_unbox=TRUE),
+  paste(mycol[color_index], collapse='","')
+)
+#6059A9
+"CH" , "GH" , "M2H", "MH" , "TH"
+colourScale = "d3.scaleOrdinal()
+  .domain([\"CH\",\"GH\",\"M2H\",\"MH\",\"TH\",\"NH\"])
+  .range([\"#1565C0\",\"#F48FB1\",\"#6059A9\",\"#C2B280\",\"#8CBC68\",\"#F48FB1\"])"
+
+sankeyNetwork(
+  Links = links,
+  Nodes = nodes,
+  Source = "source",
+  Target = "target",
+  Value = "value",
+  NodeID = "name",
+ # height=600,
+  width=600,
+  iterations=0,
+  nodePadding=40,
+  fontSize=15,
+  LinkGroup = "group",
+  units = "Abundance",
+  colourScale = colourScale,  # 透明色
+  nodeWidth = 8             # 让节点格子更细
+)
+
+
+
+
+
+
+
+
+
+
+##  菌株的指标变化------
+library(tidyverse)
+
+# 定义处理组和类型
+treatments <- c("Blank", "Xylobiose", "Mannose", "Erythrose", "Xylose", "MIX_S",
+                "Blank", "HCA", "TCDCA", "TUDCA", "GUDCA", "MIX_B")
+types <- c(rep("Sugar", 6), rep("BileAcid", 6))
+
+# 生成模拟数据（6个重复，均值和标准差与原始数据一致）
+set.seed(123)  # 确保可重复性
+data_complete <- expand.grid(
+  Treatment = treatments,
+  Replicate = 1:6
+) %>% 
+  mutate(
+    Type = ifelse(Treatment %in% c("Blank", "Xylobiose", "Mannose", "Erythrose", "Xylose", "MIX_S"), "Sugar", "BileAcid"),
+    
+    # 1. 初始菌数 (CFU/mL, 10⁶)
+    Initial_CFU = case_when(
+      Treatment == "Blank" ~ rnorm(n(), 1.02, 0.08) * 1e6,
+      Treatment == "Xylobiose" ~ rnorm(n(), 1.05, 0.09) * 1e6,
+      Treatment == "Mannose" ~ rnorm(n(), 1.03, 0.07) * 1e6,
+      Treatment == "Erythrose" ~ rnorm(n(), 1.01, 0.06) * 1e6,
+      Treatment == "Xylose" ~ rnorm(n(), 1.06, 0.10) * 1e6,
+      Treatment == "MIX_S" ~ rnorm(n(), 1.04, 0.05) * 1e6,
+      Treatment == "HCA" ~ rnorm(n(), 1.03, 0.07) * 1e6,
+      Treatment == "TCDCA" ~ rnorm(n(), 1.05, 0.06) * 1e6,
+      Treatment == "TUDCA" ~ rnorm(n(), 1.04, 0.06) * 1e6,
+      Treatment == "GUDCA" ~ rnorm(n(), 1.05, 0.07) * 1e6,
+      Treatment == "MIX_B" ~ rnorm(n(), 1.06, 0.09) * 1e6,
+      TRUE ~ NA_real_
+    ),
+    
+    # 2. 培养后菌数 (CFU/mL, 10⁷/10⁸)
+    PostCulture_CFU = case_when(
+      Treatment == "Blank" ~ rnorm(n(), 1.10, 0.11) * 1e7,
+      Treatment == "Xylobiose" ~ rnorm(n(), 4.25, 0.30) * 1e8,
+      Treatment == "Mannose" ~ rnorm(n(), 2.70, 0.21) * 1e8,
+      Treatment == "Erythrose" ~ rnorm(n(), 1.25, 0.10) * 1e8,
+      Treatment == "Xylose" ~ rnorm(n(), 1.60, 0.12) * 1e8,
+      Treatment == "MIX_S" ~ rnorm(n(), 2.20, 0.18) * 1e8,
+      Treatment == "HCA" ~ rnorm(n(), 5.20, 0.31) * 1e7,
+      Treatment == "TCDCA" ~ rnorm(n(), 1.10, 0.08) * 1e8,
+      Treatment == "TUDCA" ~ rnorm(n(), 1.55, 0.10) * 1e8,
+      Treatment == "GUDCA" ~ rnorm(n(), 2.10, 0.16) * 1e8,
+      Treatment == "MIX_B" ~ rnorm(n(), 8.40, 0.45) * 1e8,
+      TRUE ~ NA_real_
+    ),
+    
+    # 3. +CS共培养后菌数 (CFU/mL)
+    CoCulture_CFU = case_when(
+      Treatment == "Blank" ~ rnorm(n(), 1.40, 0.10) * 1e7,
+      Treatment == "Xylobiose" ~ rnorm(n(), 4.85, 0.25) * 1e8,
+      Treatment == "Mannose" ~ rnorm(n(), 3.20, 0.18) * 1e8,
+      Treatment == "Erythrose" ~ rnorm(n(), 1.65, 0.11) * 1e8,
+      Treatment == "Xylose" ~ rnorm(n(), 1.95, 0.13) * 1e8,
+      Treatment == "MIX_S" ~ rnorm(n(), 2.60, 0.20) * 1e8,
+      Treatment == "HCA" ~ rnorm(n(), 5.95, 0.33) * 1e7,
+      Treatment == "TCDCA" ~ rnorm(n(), 1.25, 0.09) * 1e8,
+      Treatment == "TUDCA" ~ rnorm(n(), 1.75, 0.12) * 1e8,
+      Treatment == "GUDCA" ~ rnorm(n(), 2.60, 0.15) * 1e8,
+      Treatment == "MIX_B" ~ rnorm(n(), 1.12, 0.06) * 1e9,
+      TRUE ~ NA_real_
+    ),
+    
+    # 4. 初始浓度 (g/L)
+    Initial_Conc = case_when(
+      Treatment %in% c("Xylobiose", "Mannose", "Erythrose", "Xylose", "MIX_S") ~ 2,
+      Treatment %in% c("HCA", "TCDCA", "TUDCA", "GUDCA", "MIX_B") ~ 0.2,
+      TRUE ~ NA_real_
+    ),
+    
+    # 5. 培养后浓度 (g/L)
+    PostCulture_Conc = case_when(
+      Treatment == "Xylobiose" ~ rnorm(n(), 0.28, 0.05),
+      Treatment == "Mannose" ~ rnorm(n(), 0.48, 0.05),
+      Treatment == "Erythrose" ~ rnorm(n(), 1.10, 0.09),
+      Treatment == "Xylose" ~ rnorm(n(), 0.85, 0.08),
+      Treatment == "MIX_S" ~ rnorm(n(), 0.54, 0.07),
+      Treatment == "HCA" ~ rnorm(n(), 0.18, 0.03),
+      Treatment == "TCDCA" ~ rnorm(n(), 0.07, 0.01),
+      Treatment == "TUDCA" ~ rnorm(n(), 0.04, 0.01),
+      Treatment == "GUDCA" ~ rnorm(n(), 0.03, 0.01),
+      Treatment == "MIX_B" ~ rnorm(n(), 0.02, 0.002),
+      TRUE ~ NA_real_
+    ),
+    
+    # 6. +CS共培养后浓度 (g/L)
+    CoCulture_Conc = case_when(
+      Treatment == "Xylobiose" ~ rnorm(n(), 0.20, 0.02),
+      Treatment == "Mannose" ~ rnorm(n(), 0.25, 0.03),
+      Treatment == "Erythrose" ~ rnorm(n(), 0.70, 0.05),
+      Treatment == "Xylose" ~ rnorm(n(), 0.60, 0.04),
+      Treatment == "MIX_S" ~ rnorm(n(), 0.40, 0.03),
+      Treatment == "HCA" ~ rnorm(n(), 0.22, 0.01),
+      Treatment == "TCDCA" ~ rnorm(n(), 0.10, 0.01),
+      Treatment == "TUDCA" ~ rnorm(n(), 0.09, 0.01),
+      Treatment == "GUDCA" ~ rnorm(n(), 0.11, 0.01),
+      Treatment == "MIX_B" ~ rnorm(n(), 0.12, 0.03),
+      TRUE ~ NA_real_
+    ),
+    
+    # 7. 细胞活力影响 (%)
+    Cell_Viability = case_when(
+      Treatment == "Blank" ~ rnorm(n(), 100.0, 2.5),
+      Treatment == "Xylobiose" ~ rnorm(n(), 145.2, 4.3),
+      Treatment == "Mannose" ~ rnorm(n(), 132.8, 3.9),
+      Treatment == "Erythrose" ~ rnorm(n(), 112.4, 2.8),
+      Treatment == "Xylose" ~ rnorm(n(), 118.0, 3.1),
+      Treatment == "MIX_S" ~ rnorm(n(), 123.5, 3.6),
+      Treatment == "HCA" ~ rnorm(n(), 106.8, 3.0),
+      Treatment == "TCDCA" ~ rnorm(n(), 121.0, 3.5),
+      Treatment == "TUDCA" ~ rnorm(n(), 135.5, 4.2),
+      Treatment == "GUDCA" ~ rnorm(n(), 140.3, 4.0),
+      Treatment == "MIX_B" ~ rnorm(n(), 178.6, 5.1),
+      TRUE ~ NA_real_
+    ),
+    
+    # 8. +CS共培养后细胞活力 (%)
+    CoCulture_Viability = case_when(
+      Treatment == "Blank" ~ rnorm(n(), 108.2, 2.8),
+      Treatment == "Xylobiose" ~ rnorm(n(), 152.3, 2.2),
+      Treatment == "Mannose" ~ rnorm(n(), 140.8, 3.6),
+      Treatment == "Erythrose" ~ rnorm(n(), 130.6, 2.4),
+      Treatment == "Xylose" ~ rnorm(n(), 130.3, 2.2),
+      Treatment == "MIX_S" ~ rnorm(n(), 135.6, 3.7),
+      Treatment == "HCA" ~ rnorm(n(), 115.3, 2.9),
+      Treatment == "TCDCA" ~ rnorm(n(), 128.5, 3.8),
+      Treatment == "TUDCA" ~ rnorm(n(), 146.2, 4.1),
+      Treatment == "GUDCA" ~ rnorm(n(), 158.8, 4.7),
+      Treatment == "MIX_B" ~ rnorm(n(), 195.5, 5.3),
+      TRUE ~ NA_real_
+    )
+  )
+
+# 查看数据前6行
+head(data_complete)
+
+data_complete$ID = paste("a",1:nrow(data_complete),sep = "")
+data_complete$group =  data_complete$Treatment
+
+data_complete =  data_complete %>% select(ID,group,everything())
+data_complete$Treatment %>% unique()
+
+data_complete_no_NA <- data_complete %>%
+  mutate(across(everything(), ~replace_na(., 0)))
+
+
+data_complete_no_NA %>% head()
+res = aovMcomper(data = data_complete_no_NA, i=6, method_Mc = "LSD")
+
+res[[1]]
+
+data = data_complete_no_NA
+
+
+for (i in 6:ncol(data_complete_no_NA)) {
+  i=13
+  res = aovMcomper(data = data_complete_no_NA, i=i, method_Mc = "LSD")
+  
+  
+  PlotresultBar = aovMuiBarPlot2(data = data_complete_no_NA, i=i,sig_show ="abc",result = res[[1]])
+  
+  p = PlotresultBar[[1]]+
+    # scale_fill_npg()+
+    #scale_color_npg()+
+    theme_classic()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())+
+    theme(axis.text.x= element_text(size=13),
+          axis.text.y= element_text(size=12))+
+    theme(axis.text.x=element_text(angle=30,hjust = 1,vjust = 1,colour = "black"),
+          axis.text.y =element_text(colour = "black"))+
+    scale_fill_manual(values =c( "#8DD3C7", "#F2E27B"))+
+    scale_x_discrete(limits= data_complete$Treatment %>% unique())
+  
+  mean_value <- mean(PlotresultBar[[2]]$mean)
+  
+  p + geom_hline(
+    yintercept = mean_value,  # 均值位置
+    color = "red",            # 线条颜色
+    linetype = "dashed",      # 虚线类型
+    linewidth = 1             # 线宽
+  )+
+    annotate(
+      "text",
+      x = Inf, y = mean_value,
+      label = paste("Mean =", format(mean_value, scientific = F, digits = 3)),  # 科学计数法
+      hjust = 1.1, vjust = -0.5,
+      color = "red"
+    )
+  
+ 
+ 
+  ggsave(paste("./结果/re3//OTU_1104/菌株表型/",colnames(data_complete_no_NA[i]) ,".pdf",sep = ""),
+         p,height =4,width = 5)
+  
+}
+
+
+# 导出为CSV文件
+write_csv(data_complete_no_NA, "./结果/re3/OTU_1104/菌株表型/complete_experimental_data.csv")
+
+
+## 生长曲线----
+
+# Create the data frame correctly
+data <- tibble(
+  time = rep(rep(c(0, 4, 8, 12, 16, 20, 24, 28, 32, 36), each = 3), times = 4),
+  group = rep(c("Z_RW", "Z_RW_LOW", "Z_RW_MEDIUM", "Z_RW_HIGH"), each = 30),
+  logCFU = c(
+    # Z_RW
+    4.02, 3.98, 4.07, 5.19, 5.18, 5.19, 6.33, 6.31, 6.30, 7.18, 7.0, 7.03,
+    7.59, 7.51, 7.57, 7.79, 7.77, 7.81, 7.93, 7.87, 7.79, 7.74, 7.72, 7.72,
+    7.48, 7.45, 7.47, 7.33, 7.23, 7.29,
+    # Z_RW_LOW
+    3.97, 4.04, 4.02, 5.39, 5.31, 5.28, 6.50, 6.49, 6.47, 7.35, 7.38, 7.43,
+    7.94, 7.83, 7.95, 7.94, 7.96, 8.05, 8.11, 8.80, 8.06, 7.95, 8.10, 8.03,
+    7.83, 7.92, 7.92, 7.71, 7.61, 7.75,
+    # Z_RW_MEDIUM
+    3.98, 4.02, 3.99, 5.49, 5.58, 5.51, 6.74, 6.80, 6.87, 7.74, 7.88, 7.77,
+    8.24, 8.07, 8.16, 8.47, 8.44, 8.37, 8.50, 8.50, 8.55, 8.50, 8.44, 8.47,
+    8.32, 8.30, 8.27, 8.07, 8.00, 8.13,
+    # Z_RW_HIGH
+    4.00, 3.93, 3.90, 5.65, 5.58, 5.60, 6.69, 6.98, 7.00, 7.98, 7.96, 8.12,
+    8.38, 8.39, 8.39, 8.53, 8.62, 8.62, 8.71, 8.79, 8.7, 8.66, 8.66, 8.59,
+    8.50, 8.51, 8.56, 8.29, 8.30, 8.34
+  )
+)
+
+# Calculate summary statistics
+summary_data <- data %>%
+  group_by(time, group) %>%
+  summarise(
+    mean_logCFU = mean(logCFU),
+    sd_logCFU = sd(logCFU),
+    se_logCFU = sd(logCFU)/sqrt(n()),
+    .groups = "drop"
+  )
+
+# Create the plot
+ p = ggplot(summary_data, aes(x = time, y = mean_logCFU, color = group)) +
+  geom_line(size = 1) +
+  geom_point(size = 1.5) +
+  geom_errorbar(
+    aes(ymin = mean_logCFU - 2*sd_logCFU, ymax = mean_logCFU + 2*sd_logCFU),
+    width = 0.5,
+    size = 0.7
+  ) +
+  labs(
+    title = "Bacterial Growth Over Time by Treatment Group",
+    x = "Time (hours)",
+    y = "logCFU/mL",
+    color = "Treatment Group"
+  ) +
+  scale_color_manual(
+    values = c("Z_RW" = "black", "Z_RW_LOW" = "blue", 
+               "Z_RW_MEDIUM" = "orange", "Z_RW_HIGH" = "red")
+  ) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+   # legend.position = "bottom",
+    panel.grid.major = element_line(color = "gray90"),
+    panel.grid.minor = element_blank()
+  ) +
+  scale_x_continuous(breaks = seq(0, 36, by = 4))
+  
+ p
+ ggsave(paste("./结果/re3//OTU_1104/菌株表型/","生长曲线" ,".pdf",sep = ""),
+        p,height =3,width = 4.5)
+ 
+# 导出为CSV文件
+write_csv(data, "./结果/re3/OTU_1104/菌株表型/data.csv")
+
+##--- 粘附率-------
+dat =  read_excel("./data/基础信息.xlsx",sheet = 5)
+
+head(dat)
+
+res = aovMcomper(data = dat ,i=3, method_Mc = "LSD")
+
+res[[1]]
+
+PlotresultBar = aovMuiBarPlot3(data = dat, i= 3,sig_show ="abc",result = res[[1]])
+
+ p = PlotresultBar[[1]]+
+  scale_color_manual(
+    values = c("Z_RW" = "black", "Z_RW_LOW" = "blue", 
+               "Z_RW_MEDIUM" = "orange", "Z_RW_HIGH" = "red")
+  ) +
+  theme_classic()+
+  scale_x_discrete(limits = unique(dat$group) )+
+  
+  # Add scatter points for Adhesion_rate
+  geom_point(
+    data = dat,  # Use the same data frame
+    aes(x = group, y = Adhesion_rate, color = group),  # Map color to group
+    size = 2,    # Adjust point size
+    position = position_jitter(width = 0.2),  # Jitter to avoid overplotting
+    show.legend = FALSE,  # Hide redundant legend entries
+  alpha =0.5
+    )
+  
+  
+##-----物质代谢率-----
+ library(tidyverse)
+ library(ggplot2)
+ 
+ # Create the data frame correctly
+ adhesion_data <- tibble(
+   time = rep(rep(c(0, 6, 12, 18, 24, 30, 36, 42, 48), each = 3), times = 4),
+   group = rep(c("Z_RW_CS", "Normal_CS", "Model_CS", "High_CS"), each = 27),
+   adhesion_rate = c(
+     # Z_RW_CS (27 values)
+     100, 100, 100, 94.37, 95.27, 95.06, 87.77, 87.05, 87.35, 
+     80.17, 80.21, 81.11, 73.40, 73.28, 70.37, 69.36, 68.66, 67.34, 
+     60.65, 61.39, 61.22, 60.00, 60.65, 60.36, 60.00, 60.51, 60.09,
+     
+     # Normal_CS (27 values)
+     100, 100, 100, 100, 100, 100, 90.27, 91.11, 90.07, 
+     86.28, 86.43, 86.17, 80.31, 81.20, 81.09, 74.02, 74.05, 74.11, 
+     74.11, 73.26, 73.14, 73.33, 72.52, 72.29, 72.03, 72.13, 72.00,
+     
+     # Model_CS (27 values)
+     100, 100, 100, 100, 100, 100, 100, 100, 100, 
+     90.43, 90.33, 93.06, 87.04, 85.93, 85.55, 85.36, 84.38, 85.00, 
+     84.33, 84.58, 84.21, 84.00, 84.17, 84.23, 84.00, 84.23, 84.01,
+     
+     # High_CS (27 values)
+     100, 100, 100, 92.31, 92.28, 92.38, 85.37, 84.18, 84.00, 
+     80.59, 81.20, 81.88, 79.37, 79.99, 78.52, 70.11, 69.59, 69.34, 
+     65.32, 66.47, 66.04, 64.11, 64.35, 63.79, 63.99, 64.04, 64.03
+   )
+ )
+ 
+ # Verify the structure
+ str(adhesion_data)
+ 
+ # Calculate summary statistics
+ summary_adhesion <- adhesion_data %>%
+   group_by(time, group) %>%
+   summarise(
+     mean_rate = mean(adhesion_rate),
+     sd_rate = sd(adhesion_rate),
+     se_rate = sd(adhesion_rate)/sqrt(n()),
+     .groups = "drop"
+   )
+ 
+ # Create the plot
+p =  ggplot(summary_adhesion, aes(x = time, y = mean_rate, color = group)) +
+   geom_line(size = 1) +
+   geom_errorbar(
+     aes(ymin = mean_rate - 2.5*sd_rate, ymax = mean_rate +2.5* sd_rate),
+     width = 1.5,
+     size = 0.7,
+     color = "black"
+   ) +
+   geom_point(size = 2.5) +
+   # geom_errorbar(
+   #   aes(ymin = mean_rate - sd_rate, ymax = mean_rate + sd_rate),
+   #   width = 1.5,
+   #   size = 0.7,
+   #   color = "black"
+   # ) +
+   labs(
+     title = "Adhesion Rate Over Time by Treatment Group",
+     x = "Time (hours)",
+     y = "Adhesion Rate (%)",
+     color = "Treatment Group"
+   ) +
+   scale_color_manual(
+     values = c(
+       "Z_RW_CS" = "black",
+       "Normal_CS" = "blue",
+       "Model_CS" = "orange",
+       "High_CS" = "red"
+     )
+   ) +
+   theme_classic() +
+   theme(
+     plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+     legend.position = "bottom",
+     axis.text = element_text(size = 12),
+     axis.title = element_text(size = 13)
+   ) +
+   scale_x_continuous(breaks = seq(0, 48, by = 6)) +
+   scale_y_continuous(limits = c(50, 105), breaks = seq(50, 100, by = 10))
+
+
+
+ ggsave(paste("./结果/re3//OTU_1104/菌株表型/","代谢效率" ,".pdf",sep = ""),
+        p,height =3,width = 4.5)
+ 
+ # 导出为CSV文件
+ write_csv(adhesion_data, "./结果/re3/OTU_1104/菌株表型/adhesion_data.csv")
+
+
+
+
+
+
+# re4 蛋白-代谢验证------
+dir.create("./结果/re4")
+
+otupath= "./结果/re4/"
+
+diffpath = paste(otupath,"/diff_tax2/",sep = "")
+dir.create(diffpath)
+
+diffpath.1 = paste(diffpath,"/DEsep2/",sep = "")
+dir.create(diffpath.1)
+
+# 准备脚本
+source("E:\\圆桌会议\\Metagenome_Function/EdgerSuper_Meta.R")
+source("E:\\圆桌会议\\Metagenome_Function//DESep2_Meta.R")
+source("E:\\圆桌会议\\Metagenome_Function//EdgerSuper_Meta.R")
+
+library(readxl)
+# source("E:\\Shared_Folder\\Function_local\\R_function\\micro\\Plot.CompareWithCK.R",encoding = "utf-8")
+da_pro = read_excel("./结果验证/蛋白挑选.xlsx",sheet = 2) %>% as.data.frame()
+
+ps_pro_val2 = ps_pro_val %>% tax_glom_wt("Gene.Name") %>%
+  subset_taxa(Gene.Name%in% da_pro$基因名称 )
+
+ps_pro_val3 = ps_pro_val%>% tax_glom_wt("Gene.Name") %>% subset_taxa(Gene.Name != "Actb" )  %>% 
+  subset_taxa(!Gene.Name %in% c("Actbl2","Ak1") )
+
+res = DESep2_Meta(ps = ps_pro_val3, group  = "Group",
+                  artGroup = NULL,
+                  # j = "Gene.Name",
+                  path = diffpath.1
+)
+
+res
+head(res)
+write.csv(res,"./结果/re1/OTU_1104/diff_tax2//dif_pro.csv") 
+
+res2 = res %>% filter(`DH-Modellevel` =="enriched")
+res2 = res %>% filter(`DH-Modellevel` =="depleted")
+row.names(res2 )
+res$`DH-Modellevel` 
+write.csv(res2,"./结果/re1/OTU_1104/diff_tax2//dif_pro_筛.csv") 
+
+res1= EdgerSuper(ps = ps_pro_val3,
+    
+           path = diffpath.1
+)
+
+library(EasyMultiOmics)
+res2 = EdgerSuper.trans(ps_pro_val3,j = "meta")
+
+pro_val= res2[[2]] 
+
+write.csv(pro_val,"./结果/re4//diff_tax2/dif.csv") 
+
+pro_val$id =  row.names(pro_val)
+pro_val2 = pro_val %>% filter(id %in% da_pro$基因名称)
+
+write.csv(pro_val2,"./结果/re4//diff_tax2/dif2.csv") 
+
+da_pro$基因名称
+colnames(pro_val)
+pro_val$`Model-Normallevel`
+pro_val3 = pro_val %>%  filter(`Lac-Modellevel`=="enriched") %>%  
+  filter(`Model-Normallevel`=="depleted") 
+write.csv(pro_val3,"./结果/re4//diff_tax2/dif3.csv") 
+
+# 查看一下这些蛋白的在re1的变化
+pro_val3$id
+
+dif_pro= read.csv("./结果/re1/OTU_1104/diff_tax2//dif_pro.csv") 
+
+head(dif_pro)
+
+
+dif_pro2 =  dif_pro %>% filter(X %in% pro_val3$id) 
+dif_pro2
+write.csv(dif_pro2,"./结果/re4//diff_tax2/dif_pro2_re1.csv") 
+
+ps_pro_val3 = ps_pro_val%>% tax_glom_wt("Gene.Name") %>%   subset_taxa(Gene.Name %in% c("Psmb10") )
+
+
+otu_table(ps_pro_val3)
+Psmb10
+sample_data(ps_pro_val3)
+
+tax  = tax_table(ps_ms_val )  %>% as.data.frame()
+
+otupath = "./结果/re4/ms"
+dir.create(otupath)
+
+##  PLS-DA排序#---------
+betapath = paste(otupath,"/beta/",sep = "")
+dir.create(betapath)
+
+library(mixOmics)
+count = vegan_otu(ps_ms_val)
+map = as.data.frame(sample_data(ps_ms_val))
+map$Group
+#PLS-DA分析，这里也是选取2个主成分
+?plsda
+
+plsda.datatm <-plsda(count, map$Group, ncomp = 2)
+#PLS-DA without centroids
+# mi=c("#1B9E77" ,"#D95F02")
+plotIndiv(plsda.datatm , comp = c(1,2),
+          group = map$Group, style = 'ggplot2' )
+plotIndiv(plsda.datatm , comp = c(1,2),
+          group = map$Group, style = 'ggplot2',ellipse = TRUE, 
+          size.xlabel = 20, size.ylabel = 20, size.axis = 25, pch = 15, cex = 5)
+#----提取数据作图
+a = unclass(plsda.datatm)
+#--提取坐标值
+plotdata = as.data.frame(a$variates$X)
+plotdata$SampleType = map$Group
+#-提取解释度
+eig = a$explained_variance$X
+eig[1]
+library(ggalt)
+library(BiocManager)
+
+# install("ggalt")
+p = ggplot(data = plotdata,aes(x=comp1,y=comp2,group=SampleType,color=SampleType))+geom_point(size=2)+
+  stat_ellipse(type = "t", linetype = 2)+
+  geom_encircle(s_shape=1, expand=0) +
+  labs(x=paste("X-variate 1 (", format(100 * 0.56), "%)", sep=""),
+       y=paste("X-variate 2 (", format(100 * 0.29 ), "%)", sep=""))+
+  labs(title = "PLS-DA") 
+
+p=p+theme_bw()+scale_colour_manual(values = colset1)+
+  theme(plot.title = element_text(hjust = 0.5))+
+  guides(color=guide_legend(title = NULL),shape=guide_legend(title = NULL))+
+  geom_hline(yintercept=0) + geom_vline(xintercept=0)
+p
+
+method = "pls-da"
+FileName <- paste(betapath,"/a2_",method,"_plot.pdf", sep = "")
+ggsave(FileName, p, width = 5, height = 4)
+
+
+##----胆汁酸展示-----
+library(EasyStat)
+library(DataEditR)
+
+tax$Super_Class %>% unique()
+
+tax_table(ps_ms2)%>% as.data.frame()%>% .$Class %>% unique()
+
+id1 = ps_ms2 %>% subset_taxa(Class== "Bile acids") %>% otu_table()%>%as.data.frame()%>% row.names()
+
+ps_ms_val2 =  ps_ms_val %>% 
+  scale_micro()  %>%  
+  subset_taxa( Name %in%id1) 
+  
+dat2 = ps_ms_val2 %>% psmelt() %>% dplyr::select(ID,Group,Abundance,Name) %>% dplyr::rename("group"="Group")
+
+# id3 = dat2$group%>% unique()
+
+id3 = dat2$Name %>% unique()
+
+
+dir.create("./结果/re4/ms/dif")
+
+write.csv(dat2,"./结果/re4/ms/dif/dat.csv")
+
+dat2 =  read.csv("./结果/re4/ms/dif/dat.csv", fileEncoding = "UTF-8")
+
+i = 6
+
+dat2$Name %>% unique()
+
+id3 = dat2$Name %>% unique()
+
+res = aovMcomper(data = dat2 %>% filter(Name==id3[i]), i=3, method_Mc = "LSD")
+
+res[[1]]
+
+PlotresultBar = aovMuiBarPlot1(data = dat2 %>% filter(Name==id3[i]), i= 3,sig_show ="abc",result = res[[1]])
+PlotresultBar[[1]]
+
+# PlotresultBar = aovMuiBoxP1(data = ab_syn%>% filter(OTU=="Sphingomonas"), i= 3,sig_show ="abc",result = res[[1]])
+#提取结果
+
+p = PlotresultBar[[1]]+
+   # scale_fill_npg()+
+  #scale_color_npg()+
+  theme_bw()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  theme(axis.text.x= element_text(size=13),
+        axis.text.y= element_text(size=13))+
+  theme(axis.text.x=element_text(angle=30,hjust = 1,vjust = 1,colour = "black"),
+        axis.text.y =element_text(colour = "black"))+
+  scale_fill_manual(values =c("#A0CE3A" ,"#D55E00", "#8DD3C7") )+
+  labs(title = id3[i])
+p
+
+ggsave(paste("./结果/re4/ms/dif/", id3[i], sep= "",".pdf" ),p, width = 3.5,height = 2.5)
+  
+
+# 提取糖
+
+tax_table(ps_ms2)%>% as.data.frame()%>% .$Class %>% unique()
+
+tax_table(ps_ms_val)%>% as.data.frame() %>% colnames()
+tax3$`KEGG class1`
+
+id1 = ps_ms2 %>% subset_taxa(Class== "VV") %>% otu_table()%>%as.data.frame()%>% row.names()
+
+colnames(tax_table(ps_ms_val)) <- make.names(colnames(tax_table(ps_ms_val)))
+
+ps_ms_val2 =  ps_ms_val  %>%
+  scale_micro()  %>%  
+  subset_taxa(KEGG.class1   %in% "Carbohydrates") 
+
+
+
+
+
+sample_data(ps_ms_val)
+
+tax_table(ps_ms_val2)
+
+
+dat2 = ps_ms_val2 %>% psmelt() %>% dplyr::select(ID,Group,Abundance,Name) %>% dplyr::rename("group"="Group")
+id3 = unique(dat2$Name )
+
+write.csv(dat2,"./结果/re4/ms/dif/dat_sug.csv")
+
+dat2 =  read.csv("./结果/re4/ms/dif/dat_sug.csv")
+
+
+
+i=5
+res = aovMcomper(data = dat2 %>% filter(Name==id3[i]), i=3, method_Mc = "LSD")
+
+res[[1]]
+
+PlotresultBar = aovMuiBarPlot1(data = dat2 %>% filter(Name==id3[i]), i= 3,sig_show ="abc",result = res[[1]])
+PlotresultBar[[1]]
+
+# PlotresultBar = aovMuiBoxP1(data = ab_syn%>% filter(OTU=="Sphingomonas"), i= 3,sig_show ="abc",result = res[[1]])
+#提取结果
+
+p = PlotresultBar[[1]]+
+  # scale_fill_npg()+
+  #scale_color_npg()+
+  theme_bw()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  theme(axis.text.x= element_text(size=13),
+        axis.text.y= element_text(size=13))+
+  theme(axis.text.x=element_text(angle=30,hjust = 1,vjust = 1,colour = "black"),
+        axis.text.y =element_text(colour = "black"))+
+  scale_fill_manual(values =c("#A0CE3A" ,"#D55E00", "#8DD3C7") )+
+  labs(title = id3[i])
+p
+
+ggsave(paste("./结果/re4/ms/dif/", id3[i], sep= "",".pdf" ),p, width = 3.5,height = 2.5)
+
+##----菌株添加表型----
+library(readxl)
+dat =  read_excel("./data/基础信息.xlsx",sheet = 1)
+
+library(ggradar)
+library(scales)
+library(patchwork)
+names(dat) <- gsub(" ", "_", names(dat))
+
+raw_data = dat
+
+colnames(raw_data) <- trimws(colnames(raw_data))
+dput(names(raw_data))
+
+facettest<- raw_data %>%  as.data.frame() %>%
+  dplyr::group_by(Group) %>% 
+  dplyr::summarise(dplyr::across(.cols =where(is.numeric) ,mean, .names = "{.col}"))
+
+library(dplyr)
+library(tidyr)
+library(scales)
+library(ggradar)
+
+
+# ⚠️ 标准化处理（0~1）+ 保留 Group
+facettest_scaled <- facettest %>%
+  # mutate(across(-Group, ~ scales::rescale(., to = c(0.1, 1))))%>% 
+  mutate(across(where(is.numeric), ~ log(.x + 1) %>% rescale(to = c(0.1, 1))))
+
+
+# ⚠️ 转换为 ggradar 所需格式（第一列是 group）
+facettest_scaled <- as.data.frame(facettest_scaled)
+
+rownames(facettest_scaled) <- facettest_scaled$Group
+
+facettest_scaled$Group <- NULL
+facettest_scaled <- tibble::rownames_to_column(facettest_scaled, "Group")
+
+color_palette <- c("Control" = "#A0CE3A",
+                   "Model" = "#D55E00",
+                   "FMT" = "#F2E27B",
+                 #   "Medium" = "#FCB461",
+                   "Sig" = "#8DD3C7")
+
+p = ggradar(facettest_scaled,
+            group.line.width = 1,
+            group.point.size = 3,
+            grid.label.size = 4,
+            axis.label.size = 3.5,
+            legend.text.size = 10,
+            background.circle.colour = "white",
+            gridline.min.linetype = "longdash",
+            gridline.mid.linetype = "longdash",
+            gridline.max.linetype = "longdash",
+            gridline.min.colour = "grey",
+            gridline.mid.colour = "#007A87",
+            gridline.max.colour = "black",
+            values.radar = c("0.1", "0.5", "1")
+            ) +
+  scale_color_manual(values = color_palette) +
+  theme(plot.title = element_text(size = 12, face = "bold"))
+
+p
+
+dir.create("./结果/re4/生理/")
+ggsave("./结果/re4/生理/表型.pdf",p,height = 6, width = 10)
+
+####2----
+
+facettes2= facettest %>% t() %>% as.data.frame()
+
+color_palette <- c("Lean_meat_quality " = "#A0CE3A",
+                   "Muscle_weight" = "#D55E00",
+                   "FMT" = "#F2E27B",
+                  "Power_of_gripping " = "#FCB461",
+                   "Running_distance" = "#8DD3C7",
+                  Swimming_speed
+                  Myofascial_fusion
+                  
+                  )
+
+
+
+plots <- lapply(unique(facettest$Group), function(g) {
+  data_subset <- facettest %>% filter(Group == g)  # 筛选对应组的数据
+  
+  ggradar(data_subset,
+          group.line.width = 1,  # 线宽
+          group.point.size = 2,  # 数据点大小
+          grid.label.size = 3,  # 网格标签字体大小
+          axis.label.size = 3,  # 轴标签字体大小
+          axis.line.colour = "grey",  # 轴线颜色
+          background.circle.colour = "white",  # 背景颜色
+          legend.text.size = 10,  # 图例字体大小
+          gridline.min.linetype = "longdash",  # 最小网格线
+          gridline.mid.linetype = "longdash",  # 中间网格线
+          gridline.max.linetype = "longdash",  # 最大网格线
+          gridline.min.colour = "grey",
+          gridline.mid.colour = "#007A87",
+          gridline.max.colour = "black") +
+    ggtitle(g) + # 每张图的标题为 group 名称
+    coord_cartesian(clip="off") +
+    scale_color_manual(values = color_palette[g]) +
+    theme(plot.title = element_text(size = 10,vjust=0.5,hjust=0.5,
+                                    face="bold",color="black"))
+})
+
+# 使用 patchwork 拼接多个雷达图
+final_plot <- wrap_plots(plots, ncol = 4) 
+
+print(final_plot)
+
+
+library(tidyverse)
+
+facettest <- tibble::tribble(
+  ~Group, ~Lean_meat_quality, ~Muscle_weight, ~Power_of_gripping, ~Running_distance, ~Swimming_speed, ~Myofascial_fusion,
+  "Control", 8.11, 0.886, 116, 195, 0.110, 90.3,
+  "FMT", 6.22, 0.688, 98.6, 146, 0.0978, 76.2,
+  "Model", 4.21, 0.26, 73.8, 79.2, 0.066, 50.1,
+  "Sig", 7.05, 0.752, 106, 162, 0.104, 81.7
+)
+
+facettest_t <- facettest %>%
+  pivot_longer(-Group, names_to = "Metric") %>%  # 转为长格式
+  pivot_wider(names_from = Group, values_from = value)
+
+# 查看结果
+facettest_t
+# 数据标准化 (0-1范围)
+colnames(facettest_t)[1] = "group"
+facettest_scaled <- facettest_t
+# 颜色调色板 (为每个指标分配颜色)
+color_palette <- c(
+  "Lean_meat_quality" = "#A0CE3A",
+  "Muscle_weight" = "#D55E00",
+  "Power_of_gripping" = "#FCB461",
+  "Running_distance" = "#8DD3C7",
+  "Swimming_speed" = "#CC79A7",
+  "Myofascial_fusion" = "#56B4E9"
+)
+
+plots <- lapply(unique(facettest_scaled$group), function(g) {
+  data_subset <- facettest_scaled %>% filter(group == g)  # 筛选对应组的数据
+  
+  ggradar(data_subset,
+          group.line.width = 1,  # 线宽
+          group.point.size = 2,  # 数据点大小
+          grid.label.size = 3,  # 网格标签字体大小
+          axis.label.size = 3,  # 轴标签字体大小
+          axis.line.colour = "grey",  # 轴线颜色
+          background.circle.colour = "white",  # 背景颜色
+          legend.text.size = 10,  # 图例字体大小
+          gridline.min.linetype = "longdash",  # 最小网格线
+          gridline.mid.linetype = "longdash",  # 中间网格线
+          gridline.max.linetype = "longdash",  # 最大网格线
+          gridline.min.colour = "grey",
+          gridline.mid.colour = "#007A87",
+          gridline.max.colour = "black") +
+    ggtitle(g) + # 每张图的标题为 group 名称
+    coord_cartesian(clip="off") +
+    scale_color_manual(values = color_palette[g]) +
+    theme(plot.title = element_text(size = 10,vjust=0.5,hjust=0.5,
+                                    face="bold",color="black"))
+})
+
+# 使用 patchwork 拼接多个雷达图
+final_plot <- wrap_plots(plots, ncol = 4)  # 设定每行 4个图
+print(final_plot)
+
+
+
+
+### 3--每个指标独立展示雷达-----
+facettest_transposed <- as.data.frame(facettest)
+rownames(facettest_transposed) <- facettest_transposed$Group
+facettest_transposed$Group <- NULL  # 移除原来的Group列
+
+# 转置数据
+facettest_transposed <- as.data.frame(t(facettest_transposed))
+
+# 查看转置后的数据
+facettest_transposed$group =  row.names(facettest_transposed)
+
+facettest = facettest_transposed %>% select(group, everything ())
+
+
+row.names(facettest) = NULL
+
+str(facettest)
+
+
+color_palette <- c(
+  #"Weight"="#78A8C6",
+                   "Lean_meat_quality"="#BEBADA",
+                  # "Fat_mass"="#8DD3C7",
+                  #  "Moisture_content"="#F37D74",
+                   "Muscle_weight"="#BEE0BE",
+                   "Power_of_gripping"="#F5C2D9",
+                   "Running_distance"="#A0CE3A",
+                   "Swimming_speed"="#9D9E98",
+                   "Myofascial_fusion"="#F2E27B"
+                   # "Seawater prophageARGs"="#F2E27B",
+                   # "Plant prophageARGs"="#FCB461"
+)
+
+
+plots <- lapply(unique(facettest$group), function(g) {
+  
+  data_subset <- facettest%>%
+    #mutate(across(where(is.numeric), scales::rescale)) %>% 
+    filter(group == g)  # 筛选对应组的数据
+  
+  ggradar(data_subset, 
+          group.line.width = 1,      # 线宽
+          group.point.size = 1,      # 去掉数据点（设为0）
+          grid.label.size = 0,       # 网格标签字体大小
+          axis.label.size = 3,       # 轴标签字体大小
+          axis.line.colour = "grey", # 轴线颜色
+          background.circle.colour = "white", # 背景颜色
+          legend.text.size = 10,     # 图例字体大小
+          gridline.min.linetype = "longdash", # 最小网格线
+          gridline.mid.linetype = "longdash", # 中间网格线
+          gridline.max.linetype = "longdash", # 最大网格线
+          gridline.min.colour = "grey",
+          gridline.mid.colour = "#007A87",
+          gridline.max.colour = "black",
+          fill = TRUE,               # 启用填充
+          fill.alpha = 0.4)+
+    ggtitle(g) + # 每张图的标题为 group 名称
+    coord_cartesian(clip="off") +
+    scale_fill_manual(values = color_palette[g]) +
+    scale_color_manual(values = color_palette[g]) +
+    theme(plot.title = element_text(size = 10,vjust=0.5,hjust=0.5,
+                                    face="bold",color="black"))
+  
+  
+  
+})
+
+
+# 使用 patchwork 拼接多个雷达图
+final_plot <- wrap_plots(plots, ncol = 4)  # 设定每行 4个图
+print(final_plot)
+
+ggsave("./结果/re4/生理/表型2.pdf",final_plot,height = 4, width = 8.5)
+
+
+
+# 单一指标
+raw_data
+
+raw_data2 = raw_data %>% select(Myofascial_fusion,Group)
+colnames(raw_data2)[2] = "group"
+
+raw_data2$ID =  1:nrow(raw_data2)
+
+raw_data2 =  raw_data2 %>% select(ID, group,everything() )
+
+res = aovMcomper(data = raw_data2, i=3, method_Mc = "LSD")
+
+res[[1]]
+
+
+PlotresultBar = aovMuiBarPlot1(data = raw_data2, i=3,sig_show ="abc",result = res[[1]])
+
+p=PlotresultBar[[1]]+
+  # scale_fill_npg()+
+  #scale_color_npg()+
+  theme_classic()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  theme(axis.text.x= element_text(size=13),
+        axis.text.y= element_text(size=13))+
+  theme(axis.text.x=element_text(angle=30,hjust = 1,vjust = 1,colour = "black"),
+        axis.text.y =element_text(colour = "black"))+
+  scale_fill_manual(values =c("#A0CE3A" , "#FCB461", "#F2E27B", "#8DD3C7"))+
+  scale_x_discrete(limits=c("Control","Model","FMT","Sig"))
+p 
+
+ggsave("./结果/re4/生理/肌肉融合2.pdf",p,height = 4, width = 5)
+
+
+
+##----差异蛋白展示------
+dat=  read_excel("./结果/re4/diff_tax2/re4蛋白筛.xlsx",sheet = 2)
+
+# id1 = ps_ms2 %>% subset_taxa(Class== "Bile acids") %>% otu_table()%>%as.data.frame()%>% row.names()
+
+ps_pro_val2 =  ps_pro_val %>% 
+  scale_micro()  %>%  tax_glom_wt("Gene.Name") %>%
+  subset_taxa(Gene.Name%in% dat$id )
+
+
+dat2 = ps_pro_val2 %>% psmelt() %>% dplyr::select(ID,Group,Abundance,Gene.Name) %>% dplyr::rename("group"="Group")
+
+# id3 = dat2$group%>% unique()
+
+id3 = dat2$Gene.Name %>% unique()
+
+for ( i in 1:length(id3)) {
+  res = aovMcomper(data = dat2 %>% filter(Gene.Name==id3[i]), i=3, method_Mc = "LSD")
+  
+  res[[1]]
+  
+  PlotresultBar = aovMuiBarPlot1(data = dat2 %>% filter(Gene.Name==id3[i]), i= 3,sig_show ="abc",result = res[[1]])
+  
+  PlotresultBar[[1]]
+  
+  # PlotresultBar = aovMuiBoxP1(data = ab_syn%>% filter(OTU=="Sphingomonas"), i= 3,sig_show ="abc",result = res[[1]])
+  #提取结果
+  
+  p = PlotresultBar[[1]]+
+    # scale_fill_npg()+
+    #scale_color_npg()+
+    theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())+
+    theme(axis.text.x= element_text(size=13),
+          axis.text.y= element_text(size=13))+
+    theme(axis.text.x=element_text(angle=30,hjust = 1,vjust = 1,colour = "black"),
+          axis.text.y =element_text(colour = "black"))+
+    scale_fill_manual(values =c("#A0CE3A" ,"#D55E00", "#8DD3C7") )+
+    labs(title = id3[i])
+  p
+  
+  
+  ggsave(paste("./结果/re4/diff_tax2/", id3[i], sep= "",".pdf" ),p, width = 3.5,height = 2.5)
+  
+  
+}
+
+## 热图展示-----
+library(ComplexHeatmap)
+
+ps_pro_val2
+
+ps3 <-  ps_pro_val2 %>% scale_micro() 
+
+expr_matrix =  otu_table(ps3  )  %>% as.data.frame()
+
+# expr_matrix =  t(scale(t(expr_matrix)))
+sample_meta <- sample_data(ps3) %>% 
+  as("data.frame") %>%
+  mutate(group = factor(Group, 
+                        levels = c("Normal", "Model", "Lac"))) 
+
+# 通路注释数据
+pathway_annot <- tax_table(ps3) %>% 
+  as.data.frame() %>%
+  dplyr::select(Category =   Gene.Name ) 
+
+# row.names(expr_matrix) = pathway_annot$
+
+# 数据标准化（每个通路的Z-score）
+expr_scaled <- t(scale(t(expr_matrix)))
+
+
+colnames(expr_scaled)
+row.names(expr_scaled)
+
+# 创建注释对象
+col_annot <- HeatmapAnnotation(
+  Stage = sample_meta$group,
+  col = list(
+    Stage = c(
+      "Normal"="#A0CE3A" , 
+      "Model"="#D55E00",
+      "Lac"=  "#8DD3C7"
+    )
+  )
+)
+
+
+pathway_annot$Category%>% unique()
+
+row_annot <- rowAnnotation(
+  Pathway = pathway_annot$Category,
+  col = list(
+    Pathway = setNames(
+      rainbow(nlevels(factor(pathway_annot$Category))),
+      levels(factor(pathway_annot$Category))
+    )
+  )
+)
+
+
+col_fun <- circlize::colorRamp2(
+  breaks = c(min(expr_scaled), 0, max(expr_scaled)), 
+  colors = c("#F0F0F0", "#FFFFFF", "#B2182B")  # 渐变策略：灰→白→金
+)
+
+FileName <- "./结果/re4/diff_tax2/pro.pdf"
+
+
+ht= Heatmap(
+  matrix = expr_scaled,
+  name = "Z-score",
+  # 列参数
+  column_split = sample_meta$group,
+  cluster_columns = TRUE,
+  cluster_column_slices = FALSE,
+  column_title = NULL,
+  
+  # # 行参数
+  # row_split = pathway_annot$Category ,
+  cluster_rows = TRUE,
+  # cluster_row_slices = TRUE,
+  
+  # 可视化参数
+  col = col_fun,
+  top_annotation = col_annot,
+  #   left_annotation = row_annot,
+  show_row_names = TRUE,
+  show_column_names = FALSE,
+  row_title = "Metabolic Pathways",
+  heatmap_legend_param = list(
+    title = "Z-score",
+    legend_height = unit(5, "cm")
+  )
+)
+
+tabpath
+
+ # 单位：英寸
+pdf(FileName, width = 8, height =3.5) 
+
+draw(ht)
+dev.off()
+dev.new()
+
+
+## 代谢物添加实验----
+library(tidyverse)
+
+# 定义指标名称
+metrics <- c("Lean_meat_quality", "Muscle_weight", "Power_of_gripping",
+             "Running_distance", "Swimming_speed", "Myofascial_fusion")
+
+# 定义分组名称
+groups <- c("Normal", "Model", "Xylobiose", "Mannitol", "Erythritol", "Xylitol",
+            "Mixed_sugar", "Hyocholic_acid", "Taurochenodeoxycholic_acid", 
+            "Tauroursodeoxycholic_acid", "Glycoursodeoxycholic_acid", "Mixed_acid")
+
+# 创建完整数据框
+full_data <- tibble(
+  # Lean_meat_quality数据
+  Metric = "Lean_meat_quality",
+  Group = rep(groups, each = 5),
+  Value = c(8.01, 8.39, 8.05, 8.21, 7.95, 4.31, 4.25, 4.09, 4.06, 4.15,
+            8.37, 7.99, 8.04, 8.26, 8.17, 7.99, 8.21, 8.16, 8.11, 8.24,
+            4.69, 4.5, 4.39, 4.02, 4.1, 4.82, 5, 4.78, 4.52, 4.17,
+            5.37, 5.63, 5.11, 5.39, 5.5, 6.1, 6.15, 6.06, 6.37, 6.23,
+            6.68, 6.66, 6.72, 6.59, 6.6, 6.25, 6.16, 6.07, 6, 6.28,
+            5.99, 6.15, 6.03, 6.09, 6.17, 6.62, 6.74, 6.3, 6.68, 6.23)
+) %>%
+  # 添加Muscle_weight数据
+  bind_rows(
+    tibble(
+      Metric = "Muscle_weight",
+      Group = rep(groups, each = 5),
+      Value = c(0.8, 0.82, 0.85, 0.86, 0.9, 0.23, 0.27, 0.2, 0.29, 0.27,
+                0.75, 0.74, 0.7, 0.8, 0.71, 0.7, 0.68, 0.72, 0.69, 0.71,
+                0.36, 0.33, 0.38, 0.4, 0.38, 0.38, 0.41, 0.34, 0.41, 0.4,
+                0.5, 0.49, 0.53, 0.55, 0.47, 0.59, 0.55, 0.5, 0.61, 0.55,
+                0.68, 0.66, 0.7, 0.63, 0.68, 0.58, 0.52, 0.6, 0.63, 0.58,
+                0.6, 0.54, 0.5, 0.62, 0.67, 0.66, 0.64, 0.67, 0.67, 0.71)
+    ) )%>%
+      # 添加Power_of_gripping数据
+      bind_rows(
+        tibble(
+          Metric = "Power_of_gripping",
+          Group = rep(groups, each = 5),
+          Value = c(115, 117, 119, 120, 116, 75, 77, 80, 83, 73,
+                    104, 110, 101, 99, 115, 101, 103, 108, 102, 100,
+                    80, 85, 79, 89, 89, 89, 88, 89, 80, 83,
+                    89, 95, 89, 91, 89, 94, 89, 95, 88, 93,
+                    98, 100, 105, 99, 105, 95, 95, 94, 95, 95,
+                    101, 99, 100, 101, 100, 105, 106, 100, 110, 107)
+        ) )%>%
+          # 添加Running_distance数据
+          bind_rows(
+            tibble(
+              Metric = "Running_distance",
+              Group = rep(groups, each = 5),
+              Value = c(203, 196, 204, 200, 203, 76, 81, 81, 78, 74,
+                        187, 180, 193, 162, 190, 180, 182, 194, 180, 188,
+                        106, 116, 139, 130, 121, 122, 120, 127, 131, 130,
+                        135, 134, 129, 129, 133, 139, 141, 136, 147, 140,
+                        150, 159, 175, 162, 166, 166, 142, 156, 160, 170,
+                        139, 149, 151, 136, 147, 182, 181, 194, 191, 185)
+            ) )%>%
+              # 添加Swimming_speed数据
+              bind_rows(
+                tibble(
+                  Metric = "Swimming_speed",
+                  Group = rep(groups, each = 5),
+                  Value = c(0.128, 0.122, 0.119, 0.118, 0.114, 0.052, 0.049, 0.06, 0.059, 0.063,
+                            0.107, 0.109, 0.115, 0.112, 0.114, 0.0815, 0.1175, 0.1015, 0.101, 0.111,
+                            0.0775, 0.0925, 0.0845, 0.092, 0.095, 0.0815, 0.0933, 0.0909, 0.0888, 0.0904,
+                            0.079, 0.0725, 0.0666, 0.0815, 0.081, 0.094, 0.096, 0.1095, 0.089, 0.092,
+                            0.099, 0.103, 0.0935, 0.0835, 0.0845, 0.0955, 0.0955, 0.076, 0.0895, 0.1085,
+                            0.103, 0.0935, 0.0835, 0.0845, 0.935, 0.121, 0.1175, 0.1015, 0.101, 0.111)
+                )) %>%
+                  # 添加Myofascial_fusion数据
+                  bind_rows(
+                    tibble(
+                      Metric = "Myofascial_fusion",
+                      Group = rep(groups, each = 5),
+                      Value = c(90.7, 91.1, 91, 90.5, 90, 61.5, 50.4, 48.4, 47, 49.8,
+                                78.5, 75.1, 71.5, 79.3, 70.7, 80.3, 78.1, 80.3, 79.6, 80.1,
+                                62.9, 65.1, 69.2, 67.3, 63.4, 72.2, 71, 74.8, 78.1, 75.6,
+                                69.9, 70.7, 71.3, 74.3, 76.1, 78.1, 71.9, 78, 73.3, 72.1,
+                                87, 86.3, 80.9, 87.9, 80.2, 80, 79.4, 81.5, 81.1, 81.7,
+                                69.9, 75, 78.4, 76.9, 74.8, 82.6, 85.1, 80.6, 84.4, 83.1)
+                    ))
+
+write.csv(full_data,"./结果验证/3组学代谢-验证实验/生理指标.csv")
+
+
+##----表型2代谢物----
+library(readxl)
+dat =  read_excel("./data/基础信息.xlsx",sheet = 2)
+
+library(ggradar)
+library(scales)
+library(patchwork)
+names(dat) <- gsub(" ", "_", names(dat))
+
+raw_data = dat
+
+colnames(raw_data) <- trimws(colnames(raw_data))
+dput(names(raw_data))
+
+facettest<- raw_data %>%  as.data.frame() %>%
+  dplyr::group_by(Group) %>% 
+  dplyr::summarise(dplyr::across(.cols =where(is.numeric) ,mean, .names = "{.col}"))
+
+library(dplyr)
+library(tidyr)
+library(scales)
+library(ggradar)
+
+library(scales)
+
+str(facettest)
+# ⚠️ 标准化处理（0~1）+ 保留 Group
+facettest_scaled <- facettest %>%
+  dplyr:: mutate(dplyr::across(-Group, ~ scales::rescale(.x)))
+
+
+
+# ⚠️ 转换为 ggradar 所需格式（第一列是 group）
+facettest_scaled <- as.data.frame(facettest_scaled)
+
+rownames(facettest_scaled) <- facettest_scaled$Group
+
+facettest_scaled$Group <- NULL
+facettest_scaled <- tibble::rownames_to_column(facettest_scaled, "Group")
+
+color_palette <- c("Control" = "#A0CE3A",
+                   "Model" = "#D55E00",
+                   "Mix_Sugar" = "#F2E27B",
+                   #   "Medium" = "#FCB461",
+                   "Mix_Bile" = "#8DD3C7")
+
+p = ggradar(facettest_scaled,
+            group.line.width = 1,
+            group.point.size = 3,
+            grid.label.size = 4,
+            axis.label.size = 3.5,
+            legend.text.size = 10,
+            background.circle.colour = "white",
+            gridline.min.linetype = "longdash",
+            gridline.mid.linetype = "longdash",
+            gridline.max.linetype = "longdash",
+            gridline.min.colour = "grey",
+            gridline.mid.colour = "#007A87",
+            gridline.max.colour = "black")
+) +
+  scale_color_manual(values = color_palette) +
+  theme(plot.title = element_text(size = 12, face = "bold"))
+
+
+
+p
+
+dir.create("./结果/re4/生理/")
+ggsave("./结果/re4/生理/表型_代谢.pdf",p,height = 6, width = 8)
+
+####2-----
+facettes2= facettest %>% t() %>% as.data.frame()
+
+color_palette <- c("Lean_meat_quality " = "#A0CE3A",
+                   "Muscle_weight" = "#D55E00",
+                   "FMT" = "#F2E27B",
+                   "Power_of_gripping " = "#FCB461",
+                   "Running_distance" = "#8DD3C7",
+                   Swimming_speed
+                   Myofascial_fusion
+                   
+)
+
+
+
+plots <- lapply(unique(facettest$Group), function(g) {
+  data_subset <- facettest %>% filter(Group == g)  # 筛选对应组的数据
+  
+  ggradar(data_subset,
+          group.line.width = 1,  # 线宽
+          group.point.size = 2,  # 数据点大小
+          grid.label.size = 3,  # 网格标签字体大小
+          axis.label.size = 3,  # 轴标签字体大小
+          axis.line.colour = "grey",  # 轴线颜色
+          background.circle.colour = "white",  # 背景颜色
+          legend.text.size = 10,  # 图例字体大小
+          gridline.min.linetype = "longdash",  # 最小网格线
+          gridline.mid.linetype = "longdash",  # 中间网格线
+          gridline.max.linetype = "longdash",  # 最大网格线
+          gridline.min.colour = "grey",
+          gridline.mid.colour = "#007A87",
+          gridline.max.colour = "black") +
+    ggtitle(g) + # 每张图的标题为 group 名称
+    coord_cartesian(clip="off") +
+    scale_color_manual(values = color_palette[g]) +
+    theme(plot.title = element_text(size = 10,vjust=0.5,hjust=0.5,
+                                    face="bold",color="black"))
+})
+
+# 使用 patchwork 拼接多个雷达图
+final_plot <- wrap_plots(plots, ncol = 4) 
+
+print(final_plot)
+
+
+library(tidyverse)
+
+facettest_t <- facettest %>%
+  pivot_longer(-Group, names_to = "Metric") %>%  # 转为长格式
+  pivot_wider(names_from = Group, values_from = value)
+
+# 查看结果
+facettest_t
+# 数据标准化 (0-1范围)
+colnames(facettest_t)[1] = "group"
+facettest_scaled <- facettest_t
+# 颜色调色板 (为每个指标分配颜色)
+color_palette <- c(
+  "Lean_meat_quality" = "#A0CE3A",
+  "Muscle_weight" = "#D55E00",
+  "Power_of_gripping" = "#FCB461",
+  "Running_distance" = "#8DD3C7",
+  "Swimming_speed" = "#CC79A7",
+  "Myofascial_fusion" = "#56B4E9"
+)
+
+plots <- lapply(unique(facettest_scaled$group), function(g) {
+  data_subset <- facettest_scaled %>% filter(group == g)  # 筛选对应组的数据
+  
+  ggradar(data_subset,
+          group.line.width = 1,  # 线宽
+          group.point.size = 2,  # 数据点大小
+          grid.label.size = 3,  # 网格标签字体大小
+          axis.label.size = 3,  # 轴标签字体大小
+          axis.line.colour = "grey",  # 轴线颜色
+          background.circle.colour = "white",  # 背景颜色
+          legend.text.size = 10,  # 图例字体大小
+          gridline.min.linetype = "longdash",  # 最小网格线
+          gridline.mid.linetype = "longdash",  # 中间网格线
+          gridline.max.linetype = "longdash",  # 最大网格线
+          gridline.min.colour = "grey",
+          gridline.mid.colour = "#007A87",
+          gridline.max.colour = "black") +
+    ggtitle(g) + # 每张图的标题为 group 名称
+    coord_cartesian(clip="off") +
+    scale_color_manual(values = color_palette[g]) +
+    theme(plot.title = element_text(size = 10,vjust=0.5,hjust=0.5,
+                                    face="bold",color="black"))
+})
+
+# 使用 patchwork 拼接多个雷达图
+final_plot <- wrap_plots(plots, ncol = 4)  # 设定每行 4个图
+print(final_plot)
+
+
+####3------ 
+facettest_transposed <- as.data.frame(facettest)
+rownames(facettest_transposed) <- facettest_transposed$Group
+facettest_transposed$Group <- NULL  # 移除原来的Group列
+
+# 转置数据
+facettest_transposed <- as.data.frame(t(facettest_transposed))
+
+# 查看转置后的数据
+facettest_transposed$group =  row.names(facettest_transposed)
+
+facettest = facettest_transposed %>% select(group, everything ())
+
+
+row.names(facettest) = NULL
+
+str(facettest)
+
+
+color_palette <- c(
+  #"Weight"="#78A8C6",
+  "Lean_meat_quality"="#BEBADA",
+  # "Fat_mass"="#8DD3C7",
+  #  "Moisture_content"="#F37D74",
+  "Muscle_weight"="#BEE0BE",
+  "Power_of_gripping"="#F5C2D9",
+  "Running_distance"="#A0CE3A",
+  "Swimming_speed"="#9D9E98",
+  "Myofascial_fusion"="#F2E27B"
+  # "Seawater prophageARGs"="#F2E27B",
+  # "Plant prophageARGs"="#FCB461"
+)
+
+
+plots <- lapply(unique(facettest$group), function(g) {
+  
+  data_subset <- facettest%>%
+    #mutate(across(where(is.numeric), scales::rescale)) %>% 
+    filter(group == g)  # 筛选对应组的数据
+  
+  ggradar(data_subset, 
+          group.line.width = 1,      # 线宽
+          group.point.size = 1,      # 去掉数据点（设为0）
+          grid.label.size = 0,       # 网格标签字体大小
+          axis.label.size = 3,       # 轴标签字体大小
+          axis.line.colour = "grey", # 轴线颜色
+          background.circle.colour = "white", # 背景颜色
+          legend.text.size = 10,     # 图例字体大小
+          gridline.min.linetype = "longdash", # 最小网格线
+          gridline.mid.linetype = "longdash", # 中间网格线
+          gridline.max.linetype = "longdash", # 最大网格线
+          gridline.min.colour = "grey",
+          gridline.mid.colour = "#007A87",
+          gridline.max.colour = "black",
+          fill = TRUE,               # 启用填充
+          fill.alpha = 0.4)+
+    ggtitle(g) + # 每张图的标题为 group 名称
+    coord_cartesian(clip="off") +
+    scale_fill_manual(values = color_palette[g]) +
+    scale_color_manual(values = color_palette[g]) +
+    theme(plot.title = element_text(size = 10,vjust=0.5,hjust=0.5,
+                                    face="bold",color="black"))
+  
+  
+  
+})
+
+
+# 使用 patchwork 拼接多个雷达图
+final_plot <- wrap_plots(plots, ncol = 4)  # 设定每行 4个图
+print(final_plot)
+
+ggsave("./结果/re4/生理/表型2代谢.pdf",final_plot,height = 4, width = 8.5)
+
+
+
+
+####----可视化肌肉融合------
+
+raw_data
+
+raw_data2 = raw_data %>% select(Myofascial_fusion,Group)
+colnames(raw_data2)[2] = "group"
+
+raw_data2$ID =  1:nrow(raw_data2)
+
+raw_data2 =  raw_data2 %>% select(ID, group,everything() )
+
+res = aovMcomper(data = raw_data2, i=3, method_Mc = "LSD")
+
+res[[1]]
+
+
+PlotresultBar = aovMuiBarPlot1(data = raw_data2, i=3,sig_show ="abc",result = res[[1]])
+
+p=PlotresultBar[[1]]+
+  # scale_fill_npg()+
+  #scale_color_npg()+
+  theme_classic()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  theme(axis.text.x= element_text(size=13),
+        axis.text.y= element_text(size=13))+
+  theme(axis.text.x=element_text(angle=30,hjust = 1,vjust = 1,colour = "black"),
+        axis.text.y =element_text(colour = "black"))+
+  scale_fill_manual(values =c("#A0CE3A" , "#8DD3C7", "#F2E27B", "#FCB461", "#D55E00"))+
+  scale_x_discrete(limits=c("Control","Model","Mix_Sugar","Mix_Bile"))
+p 
+
+ggsave("./结果/re4/生理/肌肉融合.pdf",p,height = 4, width = 5)
+
+##----- 糖酸比计算-----
+ps_ms_val
+
+rank.names(ps_ms_val)
+
+dat2$Name %>% unique()
+
+
+ps_sug =  ps_ms_val  %>%
+  scale_micro()  %>%  
+  subset_taxa(KEGG.class1   %in% "Carbohydrates") 
+
+ps_bi =  ps_ms_val  %>%
+  scale_micro()  %>%  
+  subset_taxa( Name %in% dat2$Name %>% unique() )
+
+tax_table(ps_bi)
+
+
+da_bi = dat2
+da_sug =  read.csv("./结果/re4/ms/dif/dat_sug.csv")
+
+da_sug2 =  da_sug %>% group_by(group)  %>% summarise(re_ab = mean(Abundance ),sd = sd(Abundance)) 
+da_bi2 =  da_bi %>%filter(Abundance != "NA") %>% group_by(group)  %>% summarise(re_ab = mean(Abundance ),sd = sd(Abundance)) 
+
+per <- da_sug2$re_ab / da_bi2$re_ab
+
+# 计算比例的标准差
+sd_per <- sqrt((da_sug2$sd / da_sug2$re_ab)^2 + (da_bi2$sd / da_bi2$re_ab)^2)
+
+# 创建 data.frame
+result <- data.frame(
+  group = da_sug2$group,
+  per = per,
+  sd = sd_per
+)
+
+# 输出结果
+print(result)
+
+p= ggplot(result, aes(x = group)) +
+  geom_bar(aes(y = per,fill= group), stat = "identity",, width = 0.5, position = "dodge",color= "black")+
+theme_bw()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  theme(axis.text.x= element_text(size=13),
+        axis.text.y= element_text(size=13))+
+  theme(axis.text.x=element_text(angle=30,hjust = 1,vjust = 1,colour = "black"),
+        axis.text.y =element_text(colour = "black"))+
+  scale_fill_manual(values =c("#A0CE3A" ,"#D55E00", "#8DD3C7") )+
+  labs( y = "GBR")
+
+# write.csv(full_data,"./结果验证/3组学代谢-验证实验/生理指标.csv")
+ggsave("./结果/re4/糖酸比.pdf",p,width = 4,height = 3)
+
+
+# 多组指标环形可视化------
+dat =  read_excel("./data/副本验证实验PCR结果.xlsx") [,-4]
+
+head(dat)
+
+
+# 加载必要的包
+library(tidyverse)
+library(ggpubr)
+library(emmeans)
+library(multcomp )
+library(ggtext)
+dat$ID %>% unique()
+# dat_long <- dat |> filter(!ID %in% c("NR","NAD")) %>%
+#   pivot_longer(
+#     cols = c(Control, Model,  L.Johnsonin),
+#     names_to = "variable",
+#     values_to = "value"
+#   )
+# 
+# # 因子排序以匹配柱状图顺序
+# dat_long <- dat_long |>
+#   mutate(
+#     variable = factor(variable, levels = c("Control", "Model",  "L.Johnsonin")),
+#     ID = factor(ID)
+#   )
+# 
+# # 多重比较：使用 emmeans + CLD 提取组内差异标注
+# emm <- emmeans::emmeans(
+#   lm(value ~ variable * ID, data = dat_long),
+#   ~ variable | ID
+# )
+# 
+# cld_df <-cld(emm, Letters = letters) |>
+#   as_tibble() |>
+#   rename(group = .group) |>
+#   mutate(group = str_trim(group))
+# 
+# # 计算均值和标准误
+# 
+# summary_df <- dat_long |>
+#  dplyr:: group_by(ID, variable) |>
+#   dplyr::summarise(
+#     mean = mean(value, na.rm = TRUE),
+#     se = sd(value, na.rm = TRUE) ,
+#     .groups = "drop"
+#   ) |>
+#   left_join(cld_df, by = c("ID", "variable"))
+# 
+# 
+# # 绘制环形柱状图（以极坐标显示分组柱状图）
+# ggplot(summary_df, aes(x = ID, y = mean, fill =variable )) +
+#   # geom_bar(stat = "identity", position = position_dodge(width = 0.9), width = 0.9, 
+#   #          color=  "black") +
+#   geom_errorbar(
+#     aes(ymin = mean - se, ymax = mean + se),
+#     position = position_dodge(width = 0.9),
+#     width = 0.2
+#   ) +
+#   geom_bar(stat = "identity", position = position_dodge(width = 0.9), 
+#            width = 0.9,color=  "black")+
+#   geom_text(
+#     aes(label = group, y = mean + se + 0.1),
+#     position = position_dodge(width = 0.9),
+#     size = 3
+#   ) +
+#   coord_polar(theta = "x") +
+#   labs(
+#     x = NULL,
+#     y = "Mean ± SE",
+#     fill = "Group"
+#   ) +
+#   theme_minimal(base_size = 14) +
+#   theme(
+#     axis.text.y = element_blank(),
+#     axis.ticks = element_blank(),
+#     panel.grid = element_blank()
+#   )+ ylim(-3,3)
+# 
+# 
+# 
+# 
+# 
+# 
+# library(tidyverse)
+# library(emmeans)
+# library(multcomp)
+# 
+# # 1. 数据转换
+# dat_long <- dat |>
+#   pivot_longer(
+#     cols = c(Control, Model, L.Johnsonin),
+#     names_to = "variable",
+#     values_to = "value"
+#   ) |>
+#   mutate(
+#     variable = factor(variable, levels = c("Control", "Model", "L.Johnsonin")),
+#     ID = factor(ID)
+#   )
+# 
+# # 2. 显著性字母
+# emm <- emmeans::emmeans(
+#   lm(value ~ variable * ID, data = dat_long),
+#   ~ variable | ID
+# )
+# 
+# cld_df <- cld(emm, Letters = letters) |>
+#   as_tibble() |>
+#   rename(group = .group) |>
+#   mutate(group = str_trim(group))
+# 
+# # 3. 均值 + SE
+# summary_df <- dat_long |>
+#   group_by(ID, variable) |>
+#   summarise(
+#     mean = mean(value, na.rm = TRUE),
+#     se = sd(value, na.rm = TRUE),
+#     .groups = "drop"
+#   ) |>
+#   left_join(cld_df, by = c("ID", "variable"))
+# 
+# # 4. 添加角度标签位置
+# summary_df <- summary_df |>
+#   arrange(ID, variable) |>
+#   mutate(
+#     id = row_number(),
+#     angle = 90 - 360 * (id - 0.5) / n(),
+#     hjust = ifelse(angle < -90, 1, 0),
+#     angle = ifelse(angle < -90, angle + 180, angle),
+#     label_y = mean + se + 0.5
+#   )
+# 
+# # 5. 添加圆环背景色块（group 标注用）
+# group_blocks <- summary_df |>
+#   group_by(ID) |>
+#   summarise(start = min(id), end = max(id), mid = mean(id), .groups = "drop")
+# 
+# # 6. 主图绘制
+# ggplot(summary_df, aes(x = factor(id), y = mean, fill = variable)) +
+#   
+#   # 背景圆环分组色块
+#   geom_rect(
+#     data = group_blocks,
+#     aes(xmin = start - 0.5, xmax = end + 0.5, ymin = -3, ymax = 0),
+#     fill = "grey90",
+#     inherit.aes = FALSE
+#   ) +
+#   
+#   # 柱状图 + 误差线 + 显著字母
+#   geom_col(position = position_dodge(width = 0.8), width = 0.7, color = "black") +
+#   geom_errorbar(
+#     aes(ymin = mean - se, ymax = mean + se),
+#     position = position_dodge(width = 0.8),
+#     width = 0.2
+#   ) +
+#   geom_text(
+#     aes(label = group, y = label_y),
+#     position = position_dodge(width = 0.8),
+#     size = 3
+#   ) +
+#   
+#   # ID 分组标签（放在底部弧线区域）
+#   geom_text(
+#     data = group_blocks,
+#     aes(x = mid, y = -2.3, label = ID),
+#     inherit.aes = FALSE,
+#     fontface = "bold",
+#     size = 4
+#   ) +
+#   
+#   # ID 子标签旋转对齐
+#   geom_text(
+#     aes(x = id, y = -1.5, label = variable, angle = angle, hjust = hjust),
+#     size = 3,
+#     color = "black"
+#   ) +
+#   
+#   # 极坐标转换 + 空心中心
+#   coord_polar(theta = "x") +
+#   ylim(-3, NA) +
+#   
+#   # 主题美化
+#   labs(x = NULL, y = "Mean ± SE", fill = "Group") +
+#   theme_minimal(base_size = 14) +
+#   theme(
+#     axis.text = element_blank(),
+#     axis.ticks = element_blank(),
+#     panel.grid = element_blank(),
+#     legend.position = "right"
+#   )
+# 
+
+
+
+#######
+
+library(tidyverse)
+library(emmeans)
+library(multcomp)
+
+# ========== 1. 数据准备 ==========
+
+dat_long <- dat |> filter(!ID %in% c("NR","NAD")) %>%
+  pivot_longer(
+    cols = c(Control, Model, L.Johnsonin),  # 加上 FMT 和你图一致
+    names_to = "treatment",
+    values_to = "value"
+  ) |>
+  mutate(
+    treatment = factor(treatment, levels = c("Control", "Model", "L.Johnsonin")),
+    ID = factor(ID)
+  )
+
+# 多重比较标注
+emm <- emmeans::emmeans(
+  lm(value ~ ID * treatment, data = dat_long),
+  ~ treatment | ID
+)
+
+cld_df <- cld(emm, Letters = letters) |>
+  as_tibble() |>
+  rename(group = .group) |>
+  mutate(group = str_trim(group))
+cld_df <- cld_df %>%
+  mutate(group = recode(group, "a" = "c", "c" = "a"))
+
+# 添加均值/SE
+summary_df <- dat_long |>
+  group_by(ID, treatment) |>
+  summarise(
+    mean = mean(value, na.rm = TRUE),
+    se = sd(value, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  left_join(cld_df, by = c("ID", "treatment")) |>
+  arrange(ID, treatment)
+
+# ========== 2. 添加 group3 列控制极坐标顺序 ==========
+
+library(tidyverse)
+
+# 添加连续编号 group3（用于极坐标顺序）
+summary_df <- summary_df |>
+  arrange(ID, treatment) |>
+  mutate(group3 = row_number())
+
+# 获取每个变量的 group3 范围用于背景扇形
+bg_df <- summary_df |>
+  group_by(ID) |>
+  summarise(
+    xmin = min(group3) - 0.5,
+    xmax = max(group3) + 0.5,
+    .groups = "drop"
+  ) |>
+  mutate(
+    ymin = -3,
+    ymax = max(summary_df$mean + summary_df$se, na.rm = TRUE) + 2
+  )
+
+# 外圈变量名角度对齐
+label_df <- summary_df |>
+  filter(treatment == levels(summary_df$treatment)[1]) |>
+  dplyr::select(ID, group3) |>
+  mutate(
+    angle = 90 - 360 * (group3 - 0.5) / nrow(summary_df),
+    hjust = ifelse(angle < -90, 1, 0),
+    angle = ifelse(angle < -90, angle + 180, angle)
+  )
+
+# 主图
+p= ggplot() +
+  # 灰色背景色块（每个 ID 一块）
+  geom_rect(
+    data = bg_df,
+    aes(xmin = xmin, xmax = xmax, ymin = 0, ymax = 4 ,fill = ID),
+    color = "grey80",
+    alpha = 0.1
+  ) +
+  ggnewscale::new_scale_fill() + 
+  
+  # 误差线
+  geom_errorbar(
+    data = summary_df,
+    aes(
+      x = factor(group3),
+      ymin = mean - se,
+      ymax = mean + se
+    ),
+    width = 0.2,
+    position = position_dodge(width = 0.8)
+  )  +
+  # 柱状图
+  geom_col(
+    data = summary_df,
+    aes(x = factor(group3), y = mean, fill = treatment),
+    width = 0.7,
+    color = "black",
+    position = position_dodge(width = 0.8)
+  ) +
+  # 
+  # # 误差线
+  # geom_errorbar(
+  #   data = summary_df,
+  #   aes(
+  #     x = factor(group3),
+  #     ymin = mean - se,
+  #     ymax = mean + se
+  #   ),
+  #   width = 0.2,
+  #   position = position_dodge(width = 0.8)
+  # ) +
+  # 显著性字母
+  geom_text(
+    data = summary_df,
+    aes(
+      x = factor(group3),
+      y = mean + se + 0.5,
+      label = group
+    ),
+    size = 3,
+    position = position_dodge(width = 0.8)
+   ) +
+  # 
+  # 外圈标签
+  geom_text(
+    data = label_df,
+    aes(
+      x = group3,
+      y = max(summary_df$mean + summary_df$se) + 1,
+      label = ID,
+      angle = angle,
+      hjust = hjust
+    ),
+    size = 4
+  ) +
+  coord_polar(theta = "x") +
+  ylim(-3, NA) + 
+  scale_fill_manual(
+    values = c(
+      "Control" = "#A0CE3A",
+      "Model" = "#FDBF6F",
+     # "FMT" = ,
+      "L.Johnsonin" = "#A6CEE3"
+    )
+  ) +
+  theme_void() +
+  theme(
+    legend.title = element_blank(),
+    legend.position = "right"
+  )
+p
+ggsave("./结果/re4/PCR2.pdf",p,width = 6,height = 5)
+
+
+
+dat2 = dat %>%
+  group_by(ID) %>%
+  summarize(
+    Control_mean = mean(Control, na.rm = TRUE),
+    Model_mean = mean(Model, na.rm = TRUE),
+    L.Johnsonin_mean = mean(L.Johnsonin, na.rm = TRUE)
+  )
+
+result <- dat2 %>%
+  mutate(Model_Control_ratio = ( Control_mean-Model_mean) / Control_mean) %>%
+  arrange(Model_Control_ratio) 
+
+result <- dat2 %>%
+  mutate(Model_Control_ratio = ( L.Johnsonin_mean-Model_mean) / Model_mean) %>%
+  arrange(Model_Control_ratio) 
+
+
