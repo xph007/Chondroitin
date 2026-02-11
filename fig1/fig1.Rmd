@@ -1,0 +1,544 @@
+---
+title: "fig1"
+output: html_document
+date: "2026-02-11"
+author: "xph"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## package library
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(scales)
+library(ggradar)
+library(ggplot2)
+library(RColorBrewer)
+library(phyloseq)
+library(ggClusterNet)
+library(EasyStat)
+library(tidyverse)
+library(readxl)
+
+```
+
+## fig1.b
+
+
+
+```{r}
+raw_data = read.csv("./data/fig.1bcd.csv")
+facettest<- raw_data %>%  as.data.frame() %>%
+  dplyr::group_by(Group) %>% 
+  dplyr::summarise(dplyr::across(.cols =where(is.numeric) ,mean, .names = "{.col}"))
+facettest_transposed <- as.data.frame(facettest)
+rownames(facettest_transposed) <- facettest_transposed$Group
+facettest_transposed$Group <- NULL  # 移除原来的Group列
+
+facettest_transposed <- as.data.frame(t(facettest_transposed))
+
+facettest_transposed$group =  row.names(facettest_transposed)
+
+facettest = facettest_transposed %>% select(group, everything ())
+
+row.names(facettest) = NULL
+
+color_palette <- c("Weight"="#78A8C6",
+                   "Lean_meat_quality"="#BEBADA",
+                   "Fat_mass"="#8DD3C7",
+                   "Moisture_content"="#F37D74",
+                   "Muscle_weight"="#BEE0BE",
+                   "Power_of_gripping"="#F5C2D9",
+                   "Running_distance"="#A0CE3A",
+                   "Swimming_speed"="#9D9E98",
+                   "Myofascial_fusion"="#F2E27B"
+                   )
+
+
+facettest =  facettest %>% select(group,Control,  Model, Low,  Medium, High)
+
+
+ facettest1 = facettest %>%filter(! group  %in% c(          "Myofascial_fusion","Swimming_speed") )
+plots <- lapply(unique(facettest1$group), function(g) {
+  
+  data_subset <- facettest1%>%%>%
+    #mutate(across(where(is.numeric), scales::rescale)) %>% 
+    filter(group == g)  # 筛选对应组的数据
+  
+  ggradar(data_subset, 
+          group.line.width = 1,      # 线宽
+          group.point.size = 1,      # 去掉数据点（设为0）
+          grid.label.size = 0,       # 网格标签字体大小
+          axis.label.size = 3,       # 轴标签字体大小
+          axis.line.colour = "grey", # 轴线颜色
+          background.circle.colour = "white", # 背景颜色
+          legend.text.size = 10,     # 图例字体大小
+          gridline.min.linetype = "longdash", # 最小网格线
+          gridline.mid.linetype = "longdash", # 中间网格线
+          gridline.max.linetype = "longdash", # 最大网格线
+          gridline.min.colour = "grey",
+          gridline.mid.colour = "#007A87",
+          gridline.max.colour = "black",
+          fill = TRUE,               # 启用填充
+          fill.alpha = 0.4)+
+    ggtitle(g) + # 每张图的标题为 group 名称
+    coord_cartesian(clip="off") +
+    scale_fill_manual(values = color_palette[g]) +
+    scale_color_manual(values = color_palette[g]) +
+    theme(plot.title = element_text(size = 10,vjust=0.5,hjust=0.5,
+                                    face="bold",color="black"))
+
+  
+  })
+
+
+# 使用 patchwork 拼接多个雷达图
+final_plot <- patchwork::wrap_plots(plots, ncol = 4) 
+
+
+```
+
+## fig1.ce
+
+```{r}
+aovMuiBarPlot1 = function (data = data_wt, i = 3, sig_show = "line", result = result, 
+          ns = FALSE) 
+{
+  name_i = colnames(data[i])
+  wen1 = as.data.frame(tapply(as.vector(as.matrix(data[i])), 
+                              data$group, mean, na.rm = TRUE))
+  wen2 = as.data.frame(tapply(as.vector(as.matrix(data[i])), 
+                              data$group, sd, na.rm = TRUE))
+  went = cbind(wen1, wen2)
+  colnames(went) = c("mean", "SD")
+  aa = result
+  wentao = merge(aa, went, by = "row.names", all = F)
+  aa = mutate(wentao, ymin = mean - SD, ymax = mean + SD)
+  a = max(aa$ymax) * 1.2
+  p = ggplot(aa, aes(x = group, y = mean, colour = group)) + 
+    geom_bar(aes( fill = group), stat = "identity", 
+             width = 0.4, 
+             position = position_dodge(width = 0.3),
+             colour = "black") + geom_errorbar(aes(ymin = ymin, 
+                                                ymax = ymax
+                                                ),position = position_dodge(width = 0.3), colour = "black",
+                                                                  width = 0.15, size =0.75) + 
+    scale_y_continuous(expand = c(0, 0), limits = c(0, a)) + 
+    labs(y = name_i)
+  line = list()
+  if (sig_show == "line") {
+    zuhe = combn(aa$group, 2)
+    xxxx <- tapply(zuhe, rep(1:ncol(zuhe), each = nrow(zuhe)), 
+                   function(i) i)
+    xxxx
+    sig_lis = rep("a", dim(zuhe)[2])
+    for (i in 1:dim(zuhe)[2]) {
+      if (filter(aa, group == xxxx[[i]][1])$groups == filter(aa, 
+                                                             group == xxxx[[i]][2])$groups) {
+        sig_lis[i] = "no_sig"
+      }
+      if (filter(aa, group == xxxx[[i]][1])$groups != filter(aa, 
+                                                             group == xxxx[[i]][2])$groups) {
+        sig_lis[i] = "*"
+      }
+    }
+    if (ns == TRUE) {
+      xxxx[as.character((1:length(sig_lis))[sig_lis == 
+                                              "no_sig"])] = NULL
+      sig_lis = sig_lis[sig_lis != "no_sig"]
+    }
+    line = list(comparisons = xxxx, annotations = sig_lis, 
+                y_position = (seq(from = 1, to = max(aa$mean)/4, 
+                                  length.out = dim(zuhe)[2]) + max(aa$mean)), tip_length = rep(0.03, 
+                                                                                               dim(zuhe)[2]))
+    p = p + ggsignif::geom_signif(comparisons = xxxx, annotations = sig_lis, 
+                                  y_position = (seq(from = 1, to = max(aa$mean)/4, 
+                                                    length.out = dim(zuhe)[2]) + max(aa$mean)), tip_length = rep(0.03, 
+                                                                                                                 dim(zuhe)[2]), color = "black")
+    p
+  }
+  if (sig_show == "abc") {
+    p = p + geom_text(aes(label = groups, y = ymax, x = group, 
+                          vjust = -0.3, size = 6),color =  "black")
+    p
+  }
+  p
+  if (length(unique(data$group)) > 3) {
+    p = p + theme(axis.text.x = element_text(angle = 45, 
+                                             vjust = 1, hjust = 1))
+  }
+  return(list(p, wentao, aa, line))
+}
+
+```
+
+
+```{r}
+# 1c
+raw_data2 = raw_data %>% select(Myofascial_fusion,Group)
+colnames(raw_data2)[2] = "group"
+
+raw_data2$ID =  1:nrow(raw_data2)
+
+raw_data2 =  raw_data2 %>% select(ID, group,everything() )
+
+res = aovMcomper(data = raw_data2, i=3, method_Mc = "LSD")
+
+res[[1]]
+
+
+PlotresultBar = aovMuiBarPlot1(data = raw_data2, i=3,sig_show ="abc",result = res[[1]])
+
+p=PlotresultBar[[1]]+
+  # scale_fill_npg()+
+  #scale_color_npg()+
+  theme_classic()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  theme(axis.text.x= element_text(size=13),
+        axis.text.y= element_text(size=13))+
+  theme(axis.text.x=element_text(angle=30,hjust = 1,vjust = 1,colour = "black"),
+        axis.text.y =element_text(colour = "black"))+
+  scale_fill_manual(values =c("#A0CE3A" , "#8DD3C7", "#F2E27B", "#FCB461", "#D55E00"))+
+  scale_x_discrete(limits=c("Control","Model","Low","Medium","High"))
+ p 
+
+
+# 1e
+raw_data2 = raw_data %>% select(Swimming_speed,Group)
+colnames(raw_data2)[2] = "group"
+
+raw_data2$ID =  1:nrow(raw_data2)
+
+raw_data2 =  raw_data2 %>% select(ID, group,everything() )
+
+res = aovMcomper(data = raw_data2, i=3, method_Mc = "LSD")
+
+
+
+PlotresultBar = aovMuiBarPlot1(data = raw_data2, i=3,sig_show ="abc",result = res[[1]])
+
+p=PlotresultBar[[1]]+
+  # scale_fill_npg()+
+  #scale_color_npg()+
+  theme_classic()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  theme(axis.text.x= element_text(size=13),
+        axis.text.y= element_text(size=13))+
+  theme(axis.text.x=element_text(angle=30,hjust = 1,vjust = 1,colour = "black"),
+        axis.text.y =element_text(colour = "black"))+
+  scale_fill_manual(values =c("#A0CE3A" , "#8DD3C7", "#F2E27B", "#FCB461", "#D55E00"))+
+  scale_x_discrete(limits=c("Control","Model","Low","Medium","High"))
+
+
+```
+
+## fig.1e
+
+```{r}
+data1 =  read.csv("./data/fig.1e.CSV" )
+
+res = aovMcomper(data = data1, i=3, method_Mc = "LSD")
+
+PlotresultBar = aovMuiBarPlot1(data = data1, i=3,sig_show ="abc",result = res[[1]])
+
+p=PlotresultBar[[1]]+
+  # scale_fill_npg()+
+  #scale_color_npg()+
+  theme_classic()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  theme(axis.text.x= element_text(size=13),
+        axis.text.y= element_text(size=13))+
+  theme(axis.text.x=element_text(angle=30,hjust = 1,vjust = 1,colour = "black"),
+        axis.text.y =element_text(colour = "black"))+
+  scale_fill_manual(values =c("#A0CE3A" , "#8DD3C7", "#F2E27B", "#FCB461", "#D55E00"))+
+  scale_x_discrete(limits=c("Control","Model","Low","Medium","High"))
+p
+
+```
+## fig.1f
+
+```{r}
+library(TCseq)
+library(Mfuzz)
+library(monocle)
+library(Biobase)
+library(clusterProfiler)  
+library(org.Mm.eg.db)     
+library(DOSE)     
+library(AnnotationDbi)
+library(ClusterGVis)
+```
+
+
+```{r}
+
+map = sample_data(ps_pro) %>% as.tibble()
+sample_data <- map %>%
+  mutate(Group = recode(Group,
+                        "W1" = "Control",
+                        "W2" = "Model",
+                        "W8" = "Low",
+                        "W9" = "Medium",
+                        "W10" = "High")) %>% as.data.frame() %>% column_to_rownames("ID")
+
+sample_data$ID =  row.names(sample_data)
+sample_data(ps_pro) = sample_data
+
+```
+
+
+```{r}
+
+tax = tax_table(ps_pro) %>% head() %>% as.data.frame()
+
+tax_table(ps_pro) %>%colnames()
+
+tax_table(ps_pro)%>%as.data.frame()%>%.$GO_annotation%>% head()
+tax_table(ps_pro)%>%as.data.frame()%>%.$pathway_annotation%>% head()
+tax_table(ps_pro)%>%as.data.frame()%>%.$Protein.Description%>% head()
+
+ps_pro1 = ps_pro %>% tax_glom_wt("Gene.Name") # GeneID
+
+
+dat <- ps_pro1 %>% 
+   # scale_micro()%>% 
+  psmelt() %>% 
+  dplyr::select(OTU, Sample, Abundance, Group) %>% 
+  dplyr::group_by(Group, OTU) %>% 
+  dplyr::summarise(mean = mean(Abundance), .groups = "drop") %>% 
+  pivot_wider(names_from = Group, values_from = mean) %>% as.data.frame()  %>%
+  column_to_rownames("OTU")
+
+head(dat)
+
+# dat =  dat[-1,]
+# row.names(dat) =  gsub("mmu:","",row.names(dat))  %>% as.numeric()
+
+getClusters(obj = dat)
+ck <- clusterData(obj = dat,
+                  cluster.method = "kmeans",
+                  cluster.num = 6)
+
+cm <- clusterData(obj = dat,
+                  cluster.method = "mfuzz",
+                  cluster.num = 6)
+str(cm)
+str(ck)
+
+ck$cluster.list
+
+visCluster(object = cm,
+           plot.type = "line")
+
+visCluster(object = ck,
+           plot.type = "line")
+
+group_col <- c("Control", "Model", "Low", "Medium", "High", "Control", "Model", "Low", "Medium", "High")
+
+# 为列标识创建颜色映射
+color_palette <- c("Control" = "#A0CE3A",
+                   "Model" = "#8DD3C7",
+                   "Low" = "#F2E27B",
+                   "Medium" = "#FCB461",
+                   "High" = "#D55E00")
+
+#ht.col = list(col_range = c(-2, 0, 2),col_color = c("#A555EC","#EEEEEE","#FF597B"))
+visCluster(object = ck,
+           plot.type = "both",
+           ggplot.panel.arg = c(4,1,24,"grey90",NA),
+           #column_split = group_col,
+           #ht.col = list(col_range = c(-2, 0, 2),col_color = c("#A555EC","#EEEEEE","#FF597B")),
+           ctAnno.col = ggsci::pal_npg()(7))
+
+enrich <- enrichCluster(object = cm,  # 使用转换后的基因符号列表
+                        OrgDb = org.Mm.eg.db,
+                        type = "BP",
+                        pvalueCutoff = 0.05,
+                        topn = 5)
+
+# enrich_res <- compareCluster(
+#   geneClusters = cm$cluster.list,  # 输入KO ID列表
+#   fun = "enrichKEGG",
+#   organism = "mmu",               # 小鼠KEGG代码
+#   keyType = "kegg",               # 指定输入为KO ID
+#   pvalueCutoff = 0.1
+# )
+
+
+visCluster(object = cm,
+           plot.type = "both",
+           column_names_rot = 45,
+           show_row_dend = F,
+           #markGenes = markGenes,
+          # markGenes.side = "left",
+           genes.gp = c('italic',fontsize = 12,col = "black"),
+           annoTerm.data = enrich,
+           line.side = "left",
+           go.col = rep(ggsci::pal_d3()(6),each = 5),
+           add.bar = T,
+          # go.size = "pval",
+           annoTerm.mside = "left")
+
+
+```
+
+## fig.1g
+
+```{r}
+library(linkET)
+model1 =  read_excel("./data/model.xlsx",sheet = 1) %>% select( -1 ) 
+phy = read_excel("./data/model.xlsx",sheet = 2) %>% select( 2:10 )
+
+nrow(model1)
+
+mantel <- mantel_test(model1,phy,
+                      spec_select = list(C1 = 1,
+                                        C2 = 2,
+                                         C3 = 3,
+                                         C4 = 4,
+                                        C5 = 5,
+                                        C6 = 6
+                                        )) %>% 
+  mutate(rd = cut(r, breaks = c(-Inf, 0.2, 0.4, Inf),
+                  labels = c("< 0.2", "0.2 - 0.4", ">= 0.4")),
+         pd = cut(p, breaks = c(-Inf, 0.01, 0.05, Inf),
+                  labels = c("< 0.01", "0.01 - 0.05", ">= 0.05")))
+
+heatmap <- qcorrplot(
+  correlate(phy),  # 计算相关性矩阵
+  type = "lower",       # 热图在右上角，可改为左下角 type="lower"
+  diag = FALSE          # 不显示对角线
+) +
+  geom_square() +       # 方格填充
+  scale_fill_gradientn(
+    colours = rev(RColorBrewer::brewer.pal(11, "RdBu")),  # 红蓝渐变
+    limits = c(-1, 1)   # 颜色范围固定为-1到1
+  )
+
+
+
+p= heatmap+
+  geom_square() +
+  geom_couple(aes(colour = pd, size = rd), 
+              data = mantel, 
+              curvature = nice_curvature(),
+              node.colour = c("blue", "grey"),
+              node.fill = c("red", "grey"),
+              node.size = c(3.5, 2)
+  ) +
+  scale_fill_gradientn(colours = rev(RColorBrewer::brewer.pal(11, "RdBu"))) +
+  scale_size_manual(values = c(0.5, 1, 2)) +
+  scale_colour_manual(values = color_pal(3)) +
+  guides(size = guide_legend(title = "Mantel's r",
+                             override.aes = list(colour = "grey35"), 
+                             order = 2),
+         colour = guide_legend(title = "Mantel's p", 
+                               override.aes = list(size = 3), 
+                               order = 1),
+         fill = guide_colorbar(title = "Pearson's r", order = 3))
+
+
+```
+
+## fig.1h
+
+```{r}
+library(ggbeeswarm)
+library(ggpubr)
+df =  read.csv("./data/dif_pro.CSV")
+
+# Assuming your data is in a data frame called 'df'
+df_long <- df %>%
+  pivot_longer(
+    cols = -Treatment,  # Keep 'Treatment' column, pivot all others
+    names_to = "Group",  # New column for gene names
+    values_to = "value"  # New column for expression values
+  )
+
+data5 = df_long
+
+ggplot(data5,aes(x = Group,y = value)) +
+   geom_rect(aes(xmin=1.5,xmax=Inf,ymin=(-Inf),ymax=Inf),
+            fill='grey90',color='grey90')+
+  geom_beeswarm(aes(fill = Treatment),dodge.width = 0.9,corral.width=1.2,
+                key_glyph='rect',#指定legend.key的形状为矩形
+                color = "black",size =3,shape = 21)+
+  stat_summary(geom = "errorbar",aes(group = Treatment),
+               fun.data = "mean_se",position = position_dodge(width = 0.9),
+               color='black',width = 0.2)+
+  stat_summary(geom = "bar",aes(group = Treatment),
+               fun = "mean",position = position_beeswarm(dodge.width = 0.9),
+               color='black',fill="transparent",width = 0.5,size=1)+
+  
+ 
+  scale_fill_manual(name = "",values = c("Control" = "#A0CE3A", "Model" = "#D55E00","High" = "#8DD3C7")) +
+  # scale_x_discrete( expand = c(0.05,0))+ #控制第一个分组和Y轴的距离
+ # scale_y_continuous(limits = c(0,6000),breaks = seq(0,6000,2000), expand = c(0,0))+
+  labs(title = "",x = "", y = "")+
+  theme_classic(base_size = 18)+
+  theme(legend.position = "top",
+        #legend.margin = margin(0,0,0,0),
+        legend.key.width = unit(0.6,"cm"),
+        legend.key.height = unit(0.1,"cm"),
+        legend.key = element_rect(colour = "black"),
+        axis.title = element_text(size = 18,face = "plain"),
+        axis.text = element_text(size = 18,face = "plain",colour = "black"))
+
+# Perform pairwise comparisons within each Group
+stat.test <- df_long %>%
+  group_by(Group) %>%  # Replace 'Group' with your actual grouping variable
+  rstatix::t_test(value ~ Treatment) %>%  # Replace 'value' with your expression column
+  rstatix::add_xy_position(x = "Group", dodge = 0.9)  # Align with beeswarm positions
+
+# Optional: Adjust p-values for multiple testing (e.g., Bonferroni)
+stat.test <- stat.test %>% rstatix::adjust_pvalue(method = "bonferroni")
+
+
+p= ggplot(data5, aes(x = Group, y = value)) +
+  geom_rect(aes(xmin = 1.5, xmax = Inf, ymin = -Inf, ymax = Inf), 
+            fill = 'grey90', color = 'grey90') +
+  geom_beeswarm(aes(fill = Treatment), dodge.width = 0.9, corral.width = 1.2,
+                key_glyph = 'rect', color = "black", size = 3, shape = 21) +
+  stat_summary(geom = "errorbar", aes(group = Treatment),
+               fun.data = "mean_se", position = position_dodge(width = 0.9),
+               color = 'black', width = 0.2) +
+  stat_summary(geom = "bar", aes(group = Treatment),
+               fun = "mean", position = position_beeswarm(dodge.width = 0.9),
+               color = 'black', fill = "transparent", width = 0.5, size = 1) +
+  
+  # Add significance annotations
+  stat_pvalue_manual(
+    stat.test, 
+    label = "p.adj.signif",  # Show symbols (***, **, *)
+    tip.length = 0.01,       # Length of the bracket tips
+    bracket.nudge.y = 0.1,   # Adjust vertical position
+    step.increase = 0.1      # Spacing between brackets
+  ) +
+  
+  scale_fill_manual(
+    name = "", 
+    values = c("Control" = "#A0CE3A", "Model" = "#D55E00", "High" = "#8DD3C7")
+  ) +
+  labs(title = "", x = "", y = "") +
+  theme_classic(base_size = 18) +
+  theme(
+    legend.position = "top",
+    legend.key.width = unit(0.6, "cm"),
+    legend.key.height = unit(0.1, "cm"),
+    legend.key = element_rect(colour = "black"),
+    axis.title = element_text(size = 18, face = "plain"),
+    axis.text = element_text(size = 18, face = "plain", colour = "black")
+  )
+
+
+p
+
+```
+
