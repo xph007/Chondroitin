@@ -1,0 +1,224 @@
+---
+title: "fig.3"
+output: html_document
+date: "2026-02-11"
+author: "xph"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## fig.3B
+
+```{r}
+
+data =  read.csv("./data//fig.3b.csv")
+
+summary_data <- data %>%
+  group_by(time, group) %>%
+  summarise(
+    mean_logCFU = mean(logCFU),
+    sd_logCFU = sd(logCFU),
+    se_logCFU = sd(logCFU)/sqrt(n()),
+    .groups = "drop"
+  )
+
+# Create the plot
+ p = ggplot(summary_data, aes(x = time, y = mean_logCFU, color = group)) +
+  geom_line(size = 1) +
+  geom_point(size = 1.5) +
+  geom_errorbar(
+    aes(ymin = mean_logCFU - 2*sd_logCFU, ymax = mean_logCFU + 2*sd_logCFU),
+    width = 0.5,
+    size = 0.7
+  ) +
+  labs(
+    title = "Bacterial Growth Over Time by Treatment Group",
+    x = "Time (hours)",
+    y = "logCFU/mL",
+    color = "Treatment Group"
+  ) +
+  scale_color_manual(
+    values = c("Z_RW" = "black", "Z_RW_LOW" = "blue", 
+               "Z_RW_MEDIUM" = "orange", "Z_RW_HIGH" = "red")
+  ) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+   # legend.position = "bottom",
+    panel.grid.major = element_line(color = "gray90"),
+    panel.grid.minor = element_blank()
+  ) +
+  scale_x_continuous(breaks = seq(0, 36, by = 4))
+  
+ p
+
+```
+
+
+## fig.3c
+
+
+```{r}
+aovMuiBarPlot3 = function (data = data_wt, i = 3, sig_show = "line", result = result, 
+                           ns = FALSE) 
+{
+  name_i = colnames(data[i])
+  wen1 = as.data.frame(tapply(as.vector(as.matrix(data[i])), 
+                              data$group, mean, na.rm = TRUE))
+  wen2 = as.data.frame(tapply(as.vector(as.matrix(data[i])), 
+                              data$group, sd, na.rm = TRUE))
+  went = cbind(wen1, wen2)
+  colnames(went) = c("mean", "SD")
+  aa = result
+  wentao = merge(aa, went, by = "row.names", all = F)
+  aa = mutate(wentao, ymin = mean - SD, ymax = mean + SD)
+  a = max(aa$ymax) * 1.2
+  p =  ggplot(aa, aes(x = group, y = mean,  colour = group)) + 
+    geom_bar(aes( color = group), stat = "identity", 
+             width = 0.4, 
+             position = position_dodge(width = 0.3),fill =  "white")+ geom_errorbar(aes(ymin = ymin, 
+                                                                                        ymax = ymax
+             ),position = position_dodge(width = 0.3), colour = "black",
+             width = 0.15, size =0.75) + 
+    scale_y_continuous(expand = c(0, 0), limits = c(0, a)) + 
+    labs(y = name_i)
+  line = list()
+  if (sig_show == "line") {
+    zuhe = combn(aa$group, 2)
+    xxxx <- tapply(zuhe, rep(1:ncol(zuhe), each = nrow(zuhe)), 
+                   function(i) i)
+    xxxx
+    sig_lis = rep("a", dim(zuhe)[2])
+    for (i in 1:dim(zuhe)[2]) {
+      if (filter(aa, group == xxxx[[i]][1])$groups == filter(aa, 
+                                                             group == xxxx[[i]][2])$groups) {
+        sig_lis[i] = "no_sig"
+      }
+      if (filter(aa, group == xxxx[[i]][1])$groups != filter(aa, 
+                                                             group == xxxx[[i]][2])$groups) {
+        sig_lis[i] = "*"
+      }
+    }
+    if (ns == TRUE) {
+      xxxx[as.character((1:length(sig_lis))[sig_lis == 
+                                              "no_sig"])] = NULL
+      sig_lis = sig_lis[sig_lis != "no_sig"]
+    }
+    line = list(comparisons = xxxx, annotations = sig_lis, 
+                y_position = (seq(from = 1, to = max(aa$mean)/4, 
+                                  length.out = dim(zuhe)[2]) + max(aa$mean)), tip_length = rep(0.03, 
+                                                                                               dim(zuhe)[2]))
+    p = p + ggsignif::geom_signif(comparisons = xxxx, annotations = sig_lis, 
+                                  y_position = (seq(from = 1, to = max(aa$mean)/4, 
+                                                    length.out = dim(zuhe)[2]) + max(aa$mean)), tip_length = rep(0.03, 
+                                                                                                                 dim(zuhe)[2]), color = "black")
+    p
+  }
+  if (sig_show == "abc") {
+    p = p + geom_text(aes(label = groups, y = ymax, x = group, 
+                          vjust = -0.3, size = 6),color =  "black")
+    p
+  }
+  p
+  if (length(unique(data$group)) > 3) {
+    p = p + theme(axis.text.x = element_text(angle = 45, 
+                                             vjust = 1, hjust = 1))
+  }
+  return(list(p, wentao, aa, line))
+}
+
+```
+
+
+```{r}
+dat =  read.csv("./data/fig.3c.CSV")
+
+head(dat)
+
+res = aovMcomper(data = dat ,i=3, method_Mc = "LSD")
+
+
+PlotresultBar = aovMuiBarPlot3(data = dat, i= 3,sig_show ="abc",result = res[[1]])
+
+ p = PlotresultBar[[1]]+
+  scale_color_manual(
+    values = c("Z_RW" = "black", "Z_RW_LOW" = "blue", 
+               "Z_RW_MEDIUM" = "orange", "Z_RW_HIGH" = "red")
+  ) +
+  theme_classic()+
+  scale_x_discrete(limits = unique(dat$group) )+
+  
+  # Add scatter points for Adhesion_rate
+  geom_point(
+    data = dat,  # Use the same data frame
+    aes(x = group, y = Adhesion_rate, color = group),  # Map color to group
+    size = 2,    # Adjust point size
+    position = position_jitter(width = 0.2),  # Jitter to avoid overplotting
+    show.legend = FALSE,  # Hide redundant legend entries
+  alpha =0.5
+    )
+ p
+```
+
+## fig.3d
+
+
+```{r}
+
+ adhesion_data = read.csv("./data/adhesion_data.csv")
+# Calculate summary statistics
+ summary_adhesion <- adhesion_data %>%
+   group_by(time, group) %>%
+   summarise(
+     mean_rate = mean(adhesion_rate),
+     sd_rate = sd(adhesion_rate),
+     se_rate = sd(adhesion_rate)/sqrt(n()),
+     .groups = "drop"
+   )
+ # Create the plot
+p =  ggplot(summary_adhesion, aes(x = time, y = mean_rate, color = group)) +
+   geom_line(size = 1) +
+   geom_errorbar(
+     aes(ymin = mean_rate - 2.5*sd_rate, ymax = mean_rate +2.5* sd_rate),
+     width = 1.5,
+     size = 0.7,
+     color = "black"
+   ) +
+   geom_point(size = 2.5) +
+   # geom_errorbar(
+   #   aes(ymin = mean_rate - sd_rate, ymax = mean_rate + sd_rate),
+   #   width = 1.5,
+   #   size = 0.7,
+   #   color = "black"
+   # ) +
+   labs(
+     title = "Adhesion Rate Over Time by Treatment Group",
+     x = "Time (hours)",
+     y = "Adhesion Rate (%)",
+     color = "Treatment Group"
+   ) +
+   scale_color_manual(
+     values = c(
+       "Z_RW_CS" = "black",
+       "Normal_CS" = "blue",
+       "Model_CS" = "orange",
+       "High_CS" = "red"
+     )
+   ) +
+   theme_classic() +
+   theme(
+     plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+     legend.position = "bottom",
+     axis.text = element_text(size = 12),
+     axis.title = element_text(size = 13)
+   ) +
+   scale_x_continuous(breaks = seq(0, 48, by = 6)) +
+   scale_y_continuous(limits = c(50, 105), breaks = seq(50, 100, by = 10))
+
+p
+
+
+```
+
