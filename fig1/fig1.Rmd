@@ -65,7 +65,7 @@ facettest =  facettest %>% select(group,Control,  Model, Low,  Medium, High)
  facettest1 = facettest %>%filter(! group  %in% c(          "Myofascial_fusion","Swimming_speed") )
 plots <- lapply(unique(facettest1$group), function(g) {
   
-  data_subset <- facettest1%>%%>%
+  data_subset <- facettest1%>%
     #mutate(across(where(is.numeric), scales::rescale)) %>% 
     filter(group == g)  # 筛选对应组的数据
   
