@@ -1,0 +1,730 @@
+---
+title: "fig.4"
+author: "xph"
+date: "2026-02-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## fig.4b
+
+```{r}
+ps_ms =  readRDS("./data/ps_metabolism.rds") %>% subset_taxa(KEGG!= "-")%>% subset_taxa(HMDB!= "-")%>%  
+  subset_taxa(物质一级分类!= "其他") 
+
+ps_ms2 = ps_ms  %>% subset_taxa(KEGG!= "-") %>% subset_taxa(HMDB!= "-") %>%  
+      subset_taxa(物质一级分类!= "其他") 
+
+library(mixOmics)
+count = vegan_otu(ps_ms2)
+map = as.data.frame(sample_data(ps_ms2))
+map$Group
+
+
+plsda.datatm <-plsda(count, map$Group, ncomp = 2)
+#PLS-DA without centroids
+# mi=c("#1B9E77" ,"#D95F02")
+plotIndiv(plsda.datatm , comp = c(1,2),
+          group = map$Group, style = 'ggplot2' )
+plotIndiv(plsda.datatm , comp = c(1,2),
+          group = map$Group, style = 'ggplot2',ellipse = TRUE, 
+          size.xlabel = 20, size.ylabel = 20, size.axis = 25, pch = 15, cex = 5)
+#----提取数据作图
+a = unclass(plsda.datatm)
+#--提取坐标值
+plotdata = as.data.frame(a$variates$X)
+plotdata$SampleType = map$Group
+#-提取解释度
+eig = a$explained_variance$X
+eig[1]
+library(ggalt)
+library(BiocManager)
+# install("ggalt")
+colset1 = c( "#A0CE3A",
+             "#8DD3C7",
+             "#F2E27B",
+             "#FCB461",
+             "#D55E00")
+
+p = ggplot(data = plotdata,aes(x=comp1,y=comp2,group=SampleType,color=SampleType))+
+  geom_point(size=2)+
+  stat_ellipse(type = "t", linetype = 2)+
+  geom_encircle(s_shape=1, expand=0) +
+  labs(x=paste("X-variate 1 (", format(100 * 0.26), "%)", sep=""),
+       y=paste("X-variate 2 (", format(100 * 0.26 ), "%)", sep=""))+
+  labs(title = "PLS-DA") 
+
+p=p+theme_bw()+scale_colour_manual(values = colset1)+
+  theme(plot.title = element_text(hjust = 0.5))+
+  guides(color=guide_legend(title = NULL),shape=guide_legend(title = NULL))+
+  geom_hline(yintercept=0) + geom_vline(xintercept=0)
+p
+
+```
+
+## fig.4c
+
+```{r}
+#
+# j = "Phylum"
+# j = "Class"
+# j = "Order"
+# j =  "Family"
+# j = "Genus"
+# 
+# otu =NULL
+# tax = NULL
+# map = NULL
+# ps = ps1
+# 
+# group = "Group"
+# axis_ord = NULL
+# label = FALSE
+# sd = FALSE
+# Top = 10
+# 
+# tran = TRUE
+
+# library(phyloseq)
+# library(tidyverse)
+# library(vegan)
+# library(reshape2)
+# library("plyr")
+library(ggalluvial)
+# detach("package:ggalluvial")
+# detach("package:plyr")
+# detach("package:reshape2")
+# library(ggplot2)
+
+
+
+barMainplot = function(otu = NULL,tax = NULL,map = NULL,tree = NULL ,ps = NULL,group  = "Group",
+                       j = "Phylum",axis_ord = NULL,label = TRUE ,sd = FALSE,Top = 10,tran = TRUE){
+  
+  
+  if (is.null(axis_ord)) {
+    axis_order = NA
+  }else{
+    axis_order = strsplit(basename(axis_ord), "-")[[1]]
+  }
+  
+  ps = ggClusterNet::inputMicro(otu,tax,map,tree,ps,group  = group)
+  
+  # psdata = ps %>%
+  #   tax_glom(taxrank = j)
+  psdata <- ggClusterNet::tax_glom_wt(ps = ps,ranks = j)
+  
+  # transform to relative abundance
+  if (tran == TRUE) {
+    psdata = psdata%>%
+      phyloseq::transform_sample_counts(function(x) {x/sum(x)} )
+  }
+  
+  
+  otu = phyloseq::otu_table(psdata)
+  tax = phyloseq::tax_table(psdata)
+  
+  for (i in 1:dim(tax)[1]) {
+    if (row.names(tax)[i] %in% names(sort(rowSums(otu), decreasing = TRUE)[1:Top])) {
+      
+      tax[i,j] =tax[i,j]
+    } else {
+      tax[i,j]= "others"
+    }
+  }
+  phyloseq::tax_table(psdata)= tax
+  
+  Taxonomies <- psdata %>% # Transform to rel. abundance
+    phyloseq::psmelt()
+  
+  
+  Taxonomies$Abundance = Taxonomies$Abundance * 100
+  # Taxonomies$Abundance = Taxonomies$Abundance /rep
+  colnames(Taxonomies) <- gsub(j,"aa",colnames(Taxonomies))
+  data = c()
+  i = 2
+  for (i in 1:length(unique(phyloseq::sample_data(ps)$Group))) {
+    a <- as.data.frame(table(phyloseq::sample_data(ps)$Group))[i,1]
+    
+    b =  as.data.frame(table(phyloseq::sample_data(ps)$Group))[i,2]
+    
+    c <- Taxonomies %>% 
+      dplyr::filter(Group == a)
+    c$Abundance <- c$Abundance/b
+    data = data.frame(Sample =c$Sample,Abundance = c$Abundance,aa =c$aa,Group = c$Group)
+    
+    if (i == 1) {
+      table = data
+    }
+    if (i != 1) {
+      table = rbind(table,data)
+    }
+    
+  }
+  # head(table)
+  # sum(table$Abundance)
+  # Taxonomies$Abundance = NULL
+  # Taxonomies <- Taxonomies %>% inner_join(table,by = "Sample")
+  # head(Taxonomies)
+  Taxonomies = table
+  
+  
+  
+  #按照分组求均值
+  
+  by_cyl <- dplyr::group_by(Taxonomies, aa,Group)
+  
+  zhnagxu2 = dplyr::summarise(by_cyl, sum(Abundance), sd(Abundance))
+  
+  
+  iris_groups<- dplyr::group_by(Taxonomies, aa)
+  cc<- dplyr::summarise(iris_groups, sum(Abundance))
+  head(cc)
+  colnames(cc)= c("aa","allsum")
+  cc<- dplyr::arrange(cc, desc(allsum))
+  
+  ##使用这个属的因子对下面数据进行排序
+  head(zhnagxu2)
+  colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
+  zhnagxu2$aa = factor(zhnagxu2$aa,order = TRUE,levels = cc$aa)
+  
+  zhnagxu3 = zhnagxu2
+  zhnagxu3 %>% as.data.frame()
+  library(plyr)
+  Taxonomies_x = ddply(zhnagxu3,.(group), summarize,
+                             label_sd = cumsum(Abundance),
+                             label_y = cumsum(Abundance) - 0.5*Abundance)
+  head( Taxonomies_x )
+
+  # ?ddply
+  # Taxonomies_x$label_y =
+  Taxonomies_x = cbind(as.data.frame(zhnagxu3),as.data.frame(Taxonomies_x)[,-1])
+  
+  
+  Taxonomies_x$label = Taxonomies_x$aa
+  # #使用循环将堆叠柱状图柱子比较窄的别写标签，仅仅宽柱子写上标签
+  # for(i in 1:nrow(Taxonomies_x)){
+  #   if(Taxonomies_x[i,3] > 3){
+  #     Taxonomies_x[i,5] = Taxonomies_x[i,5]
+  #   }else{
+  #     Taxonomies_x[i,5] = NA
+  #   }
+  # }
+  
+  
+  
+  Taxonomies_x$aa = factor(Taxonomies_x$aa,order = TRUE,levels = c(as.character(cc$aa)))
+  
+  
+  
+  ##普通柱状图
+  
+  
+  p4 <- ggplot(Taxonomies_x , aes(x =  group, y = Abundance, fill = aa, order = aa)) +
+    geom_bar(stat = "identity",width = 0.5,color = "black") +
+    # scale_fill_manual(values = colors) +
+    theme(axis.title.x = element_blank()) +
+    theme(legend.text=element_text(size=6)) +
+    scale_y_continuous(name = "Relative abundance (%)") +
+    guides(fill = guide_legend(title = j)) +
+    labs(x="",y="Relative abundance (%)",
+         title= "")
+  # paste("Top ",Top," ",j,sep = "")
+  p4
+  if (is.na(axis_order)) {
+    p4 = p4
+  }else{
+    p4 = p4 + scale_x_discrete(limits = axis_order)
+  }
+  
+  
+  if (sd == TRUE) {
+    p4 =  p4 +
+      geom_errorbar(aes(ymin=label_sd-sd, ymax=label_sd +sd), width=.2)
+  }
+  
+  if (label == TRUE) {
+    p4 = p4 +
+      geom_text(aes(y = label_y, label = label ))
+  }
+  
+  
+  map = as.data.frame(phyloseq::sample_data(ps))
+  if (length(unique(map$Group))>3){p4 = p4 + theme(axis.text.x=element_text(angle=45,vjust=1, hjust=1))}
+  
+  #-------------冲击图
+  cs = Taxonomies_x $aa
+  
+  lengthfactor <- cs %>%
+    levels() %>%
+    length()
+  cs4 <- cs %>%
+    as.factor() %>%
+    summary()  %>%
+    as.data.frame()
+  cs4$id = row.names(cs4)
+  
+  
+  #对因子进行排序
+  df_arrange<- dplyr::arrange(cs4, id)
+  #对Taxonomies_x 对应的列进行排序
+  Taxonomies_x1<- dplyr::arrange(Taxonomies_x , aa)
+  head(Taxonomies_x1)
+  #构建flow的映射列Taxonomies_x
+  Taxonomies_x1$ID = factor(rep(c(1:lengthfactor), cs4$.))
+  
+  #colour = "black",size = 2,,aes(color = "black",size = 0.8)
+  head(Taxonomies_x1)
+  Taxonomies_x1$Abundance
+  
+  p3 <- ggplot(Taxonomies_x1, aes(x = group, y = Abundance,fill = aa,alluvium = aa,stratum = ID)) +
+    ggalluvial::geom_flow(aes(fill = aa, colour = aa),
+                          stat = "alluvium", lode.guidance = "rightleft",
+                          color = "black",size = 0.2,width = 0.35,alpha = .2)  +
+    geom_bar(width = 0.45,stat = "identity") +
+    labs(x="",y="Relative abundance (%)",
+         title= "") +
+    guides(fill = guide_legend(title = j),color = FALSE) +
+    scale_y_continuous(expand = c(0,0))
+  p3
+  
+  
+  # flower plot
+  p1 <- ggplot(Taxonomies_x1,
+               aes(x = group, alluvium = aa, y = Abundance)) +
+    ggalluvial::geom_flow(aes(fill = aa, colour = aa), width = 0)  +
+    labs(x="",y="Relative abundance (%)",
+         title="") +
+    guides(fill = guide_legend(title = j),color = FALSE) +
+    scale_y_continuous(expand = c(0,0))
+  
+  
+  if (is.na(axis_order)) {
+    p1 = p1
+    p3 = p3
+    
+  }else{
+    p1 = p1 + scale_x_discrete(limits = axis_order)
+    p3 = p3 + scale_x_discrete(limits = axis_order)
+    
+  }
+  # p3
+  if (label == TRUE) {
+    p1 = p1 +
+      geom_text(aes(y = label_y, label = label ))
+    p3 = p3 +
+      geom_text(aes(y = label_y, label = label ))
+  }
+  
+  if (sd == TRUE) {
+    p1 =  p1 +
+      geom_errorbar(aes(ymin=label_sd-sd, ymax=label_sd +sd), width=.2)
+    p3 =  p3 +
+      geom_errorbar(aes(ymin=label_sd-sd, ymax=label_sd +sd), width=.2)
+  }
+  
+  if (length(unique(map$Group))>3){	p3=p3+theme(axis.text.x=element_text(angle=45,vjust=1, hjust=1))}
+  
+  return(list(p4,Taxonomies,p3,p1))
+}
+
+
+
+# 
+# tax_glom_wt <- function(ps = ps,ranks = "Phylum") {
+#   
+#   
+#   otu <- as.data.frame(t(vegan_otu(ps)))
+#   tax <- as.data.frame(vegan_tax(ps))
+#   
+#   # building group
+#   tax[[ranks]][is.na(tax[[ranks]])] = "Unknown"
+#   tax[[ranks]][tax[[ranks]] == ""] = "Unknown"
+#   split <- split(otu,tax[[ranks]])
+#   #calculate sum by group
+#   apply <- lapply(split,function(x)colSums(x[]))
+#   # result chack
+#   otucon <- do.call(rbind,apply)
+#   
+#   taxcon <- tax[1:match(ranks,colnames(tax))]
+#   taxcon <- taxcon[!duplicated(tax[[ranks]]),]
+#   #-tax name with NA wound be repeated with unknown
+#   taxcon[[ranks]][is.na(taxcon[[ranks]])] = "unknown"
+#   row.names(taxcon) <- taxcon[[ranks]]
+#   
+#   
+#   pscon <- phyloseq(
+#     otu_table( as.matrix(otucon),taxa_are_rows = TRUE),
+#     tax_table(as.matrix(taxcon)),
+#     sample_data(ps)
+#   )
+#   return(pscon)
+# }
+# 
+
+```
+
+
+```{r}
+mycol3 <- rev(c('#FCCDE5',
+                '#B3DE69','#FDB462','#80B1D3','#FB8072',
+                '#BEBADA','#8DD3C7'))
+
+
+phyloseq::rank_names(ps_ms2)
+
+tax = tax_table(ps_ms2) %>% as.data.frame()
+
+j = "Class"
+
+strbar = c("Class" , "Class.I"  )
+# strbar = c("Superclass","Class"  )
+
+
+  result = barMainplot(ps = ps_ms2,
+                       j = j,
+                       # axis_ord = axis_order,
+                       label = FALSE,
+                       sd = FALSE,
+                       Top = 6)
+  p4_1 <- result[[1]] + 
+    # scale_fill_brewer(palette = "Paired") + 
+    scale_fill_manual(values = mycol3) +
+    # scale_x_discrete(limits = axis_order) +
+   # mytheme1
+  p4_1
+  p4_2  <- result[[3]] + 
+    # scale_fill_brewer(palette = "Paired") + 
+    scale_fill_manual(values = mycol3) +
+   #  scale_x_discrete(limits = axis_order) + 
+   # mytheme1
+  p4_2
+  
+  databar <- result[[2]] %>% 
+    dplyr::group_by(Group,aa) %>%
+    dplyr::summarise(sum(Abundance)) %>% as.data.frame()
+  head(databar)
+  colnames(databar) = c("Group",j,"Abundance(%)")
+  
+ 
+```
+
+## fig.4d
+```{r}
+library(ComplexHeatmap)
+ps_ms2
+tax_table(ps2)%>% as.data.frame()%>% .$KEGG
+tax_table(ps2)%>% as.data.frame()%>% .$物质一级分类 %>% unique()
+tax_table(ps_ms2)%>% as.data.frame()%>% .$Class %>% unique()
+tax_table(ps_ms2)%>% as.data.frame()%>% .$Class.I %>% unique()
+
+tax = tax_table(ps_ms2)%>% as.data.frame()
+
+id =  c("Sugars")
+
+i=1
+for(i in 1:length(id) ){
+  
+  ps3 <-  ps_ms %>% scale_micro()  %>%  subset_taxa(Class==id[i] ) 
+  
+  expr_matrix =  otu_table(ps3  )  %>% as.data.frame()
+  
+  # expr_matrix =  t(scale(t(expr_matrix)))
+  sample_meta <- sample_data(ps3) %>% 
+    as("data.frame") %>%
+    mutate(group = factor(Group, 
+                          levels = c("W1", "W2", "W8", "W9","W10"))) 
+  # 通路注释数据
+  pathway_annot <- tax_table(ps3) %>% 
+    as.data.frame() %>%
+    dplyr::select(Category =   物质 ) 
+  
+  # row.names(expr_matrix) = pathway_annot$
+  
+  # 数据标准化（每个通路的Z-score）
+  expr_scaled <- t(scale(t(expr_matrix)))
+  
+  
+  colnames(expr_scaled)
+  row.names(expr_scaled)
+  # 创建注释对象
+  col_annot <- HeatmapAnnotation(
+    Stage = sample_meta$group,
+    col = list(
+      Stage = c(
+        "W1" = "#FFD700",
+        "W2" = "#32CD32",
+        "W8" = "#FF4500",
+        "W9" = "#8A2BE2",
+        "W10" =  "grey"
+      )
+    )
+  )
+  
+  pathway_annot$Category%>% unique()
+  
+  row_annot <- rowAnnotation(
+    Pathway = pathway_annot$Category,
+    col = list(
+      Pathway = setNames(
+        rainbow(nlevels(factor(pathway_annot$Category))),
+        levels(factor(pathway_annot$Category))
+      )
+    )
+  )
+  
+  
+  col_fun <- circlize::colorRamp2(
+    breaks = c(min(expr_scaled), 0, max(expr_scaled)), 
+    colors = c("#F0F0F0", "#FFFFFF", "#B2182B")  # 渐变策略：灰→白→金
+  )
+  
+  ht <- Heatmap(
+    matrix = expr_scaled,
+    name = "Z-score",
+    # 列参数
+    column_split = sample_meta$group,
+    cluster_columns = TRUE,
+    cluster_column_slices = FALSE,
+    column_title = NULL,
+    
+    # # 行参数
+    # row_split = pathway_annot$Category ,
+    cluster_rows = TRUE,
+    # cluster_row_slices = TRUE,
+    
+    # 可视化参数
+    col = col_fun,
+    top_annotation = col_annot,
+    #   left_annotation = row_annot,
+    show_row_names = TRUE,
+    show_column_names = FALSE,
+    row_title = "Metabolic Pathways",
+    heatmap_legend_param = list(
+      title = "Z-score",
+      legend_height = unit(5, "cm")
+    )
+  )
+  
+```
+
+## fig.4f
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(scales)
+library(ggradar)
+library(readxl)
+library(tidyverse)
+library(patchwork)
+dat =  read.csv("./data/ms_val.CSV")
+
+names(dat) <- gsub(" ", "_", names(dat))
+
+raw_data = dat
+
+colnames(raw_data) <- trimws(colnames(raw_data))
+dput(names(raw_data))
+
+facettest<- raw_data %>%  as.data.frame() %>%
+  dplyr::group_by(Group) %>% 
+  dplyr::summarise(dplyr::across(.cols =where(is.numeric) ,mean, .names = "{.col}"))
+
+
+facettest_transposed <- as.data.frame(facettest)
+rownames(facettest_transposed) <- facettest_transposed$Group
+facettest_transposed$Group <- NULL  # 移除原来的Group列
+
+# 转置数据
+facettest_transposed <- as.data.frame(t(facettest_transposed))
+
+# 查看转置后的数据
+facettest_transposed$group =  row.names(facettest_transposed)
+
+facettest = facettest_transposed %>% select(group, everything ())
+
+
+row.names(facettest) = NULL
+
+str(facettest)
+
+
+color_palette <- c(
+  #"Weight"="#78A8C6",
+  "Lean_meat_quality"="#BEBADA",
+  "Muscle_weight"="#BEE0BE",
+  "Power_of_gripping"="#F5C2D9",
+  "Running_distance"="#A0CE3A",
+  "Swimming_speed"="#9D9E98",
+  "Myofascial_fusion"="#F2E27B"
+  
+)
+
+
+plots <- lapply(unique(facettest$group), function(g) {
+  
+  data_subset <- facettest%>%
+    #mutate(across(where(is.numeric), scales::rescale)) %>% 
+    filter(group == g)  # 筛选对应组的数据
+  
+  ggradar(data_subset, 
+          group.line.width = 1,      # 线宽
+          group.point.size = 1,      # 去掉数据点（设为0）
+          grid.label.size = 0,       # 网格标签字体大小
+          axis.label.size = 3,       # 轴标签字体大小
+          axis.line.colour = "grey", # 轴线颜色
+          background.circle.colour = "white", # 背景颜色
+          legend.text.size = 10,     # 图例字体大小
+          gridline.min.linetype = "longdash", # 最小网格线
+          gridline.mid.linetype = "longdash", # 中间网格线
+          gridline.max.linetype = "longdash", # 最大网格线
+          gridline.min.colour = "grey",
+          gridline.mid.colour = "#007A87",
+          gridline.max.colour = "black",
+          fill = TRUE,               # 启用填充
+          fill.alpha = 0.4)+
+    ggtitle(g) + # 每张图的标题为 group 名称
+    coord_cartesian(clip="off") +
+    scale_fill_manual(values = color_palette[g]) +
+    scale_color_manual(values = color_palette[g]) +
+    theme(plot.title = element_text(size = 10,vjust=0.5,hjust=0.5,
+                                    face="bold",color="black"))
+  
+  
+  
+})
+
+
+# 使用 patchwork 拼接多个雷达图
+final_plot <- wrap_plots(plots, ncol = 4)  # 设定每行 4个图
+print(final_plot)
+
+```
+
+
+## fig.4g
+
+```{r}
+aovMuiBarPlot1 = function (data = data_wt, i = 3, sig_show = "line", result = result, 
+          ns = FALSE) 
+{
+  name_i = colnames(data[i])
+  wen1 = as.data.frame(tapply(as.vector(as.matrix(data[i])), 
+                              data$group, mean, na.rm = TRUE))
+  wen2 = as.data.frame(tapply(as.vector(as.matrix(data[i])), 
+                              data$group, sd, na.rm = TRUE))
+  went = cbind(wen1, wen2)
+  colnames(went) = c("mean", "SD")
+  aa = result
+  wentao = merge(aa, went, by = "row.names", all = F)
+  aa = mutate(wentao, ymin = mean - SD, ymax = mean + SD)
+  a = max(aa$ymax) * 1.2
+  p = ggplot(aa, aes(x = group, y = mean, colour = group)) + 
+    geom_bar(aes( fill = group), stat = "identity", 
+             width = 0.4, 
+             position = position_dodge(width = 0.3),
+             colour = "black") + geom_errorbar(aes(ymin = ymin, 
+                                                ymax = ymax
+                                                ),position = position_dodge(width = 0.3), colour = "black",
+                                                                  width = 0.15, size =0.75) + 
+    scale_y_continuous(expand = c(0, 0), limits = c(0, a)) + 
+    labs(y = name_i)
+  line = list()
+  if (sig_show == "line") {
+    zuhe = combn(aa$group, 2)
+    xxxx <- tapply(zuhe, rep(1:ncol(zuhe), each = nrow(zuhe)), 
+                   function(i) i)
+    xxxx
+    sig_lis = rep("a", dim(zuhe)[2])
+    for (i in 1:dim(zuhe)[2]) {
+      if (filter(aa, group == xxxx[[i]][1])$groups == filter(aa, 
+                                                             group == xxxx[[i]][2])$groups) {
+        sig_lis[i] = "no_sig"
+      }
+      if (filter(aa, group == xxxx[[i]][1])$groups != filter(aa, 
+                                                             group == xxxx[[i]][2])$groups) {
+        sig_lis[i] = "*"
+      }
+    }
+    if (ns == TRUE) {
+      xxxx[as.character((1:length(sig_lis))[sig_lis == 
+                                              "no_sig"])] = NULL
+      sig_lis = sig_lis[sig_lis != "no_sig"]
+    }
+    line = list(comparisons = xxxx, annotations = sig_lis, 
+                y_position = (seq(from = 1, to = max(aa$mean)/4, 
+                                  length.out = dim(zuhe)[2]) + max(aa$mean)), tip_length = rep(0.03, 
+                                                                                               dim(zuhe)[2]))
+    p = p + ggsignif::geom_signif(comparisons = xxxx, annotations = sig_lis, 
+                                  y_position = (seq(from = 1, to = max(aa$mean)/4, 
+                                                    length.out = dim(zuhe)[2]) + max(aa$mean)), tip_length = rep(0.03, 
+                                                                                                                 dim(zuhe)[2]), color = "black")
+    p
+  }
+  if (sig_show == "abc") {
+    p = p + geom_text(aes(label = groups, y = ymax, x = group, 
+                          vjust = -0.3, size = 6),color =  "black")
+    p
+  }
+  p
+  if (length(unique(data$group)) > 3) {
+    p = p + theme(axis.text.x = element_text(angle = 45, 
+                                             vjust = 1, hjust = 1))
+  }
+  return(list(p, wentao, aa, line))
+}
+
+```
+
+
+```{r}
+
+raw_data
+
+raw_data2 = raw_data %>% select(Myofascial_fusion,Group)
+colnames(raw_data2)[2] = "group"
+
+raw_data2$ID =  1:nrow(raw_data2)
+
+raw_data2 =  raw_data2 %>% select(ID, group,everything() )
+
+res =EasyStat:: aovMcomper(data = raw_data2, i=3, method_Mc = "LSD")
+
+res[[1]]
+
+
+PlotresultBar = aovMuiBarPlot1(data = raw_data2, i=3,sig_show ="abc",result = res[[1]])
+
+p=PlotresultBar[[1]]+
+  # scale_fill_npg()+
+  #scale_color_npg()+
+  theme_classic()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  theme(axis.text.x= element_text(size=13),
+        axis.text.y= element_text(size=13))+
+  theme(axis.text.x=element_text(angle=30,hjust = 1,vjust = 1,colour = "black"),
+        axis.text.y =element_text(colour = "black"))+scale_fill_manual(values = c(
+          "Control" = "#A0CE3A",
+          "Model" = "#D55E00",
+          "Mix_Sugar" = "#F2E27B",
+          "Mix_Sugar_RW" = "#FCB461",
+          "Mix_Bile" = "#8DD3C7",
+          "Mix_Bile_RW" = "#BEB8F8"
+        )) +
+  scale_x_discrete(limits = c(
+    "Control",
+    "Model",
+    "Mix_Sugar",
+    "Mix_Sugar_RW",
+    "Mix_Bile",
+    "Mix_Bile_RW"
+  ))
+p 
+
+```
+
