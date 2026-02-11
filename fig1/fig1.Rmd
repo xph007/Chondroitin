@@ -28,8 +28,6 @@ library(readxl)
 
 ## fig1.b
 
-
-
 ```{r}
 raw_data = read.csv("./data/fig.1bcd.csv")
 facettest<- raw_data %>%  as.data.frame() %>%
@@ -541,4 +539,5 @@ p= ggplot(data5, aes(x = Group, y = value)) +
 p
 
 ```
+
 
