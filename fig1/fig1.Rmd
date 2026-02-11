@@ -260,132 +260,6 @@ p=PlotresultBar[[1]]+
 p
 
 ```
-## fig.1f
-
-```{r}
-library(TCseq)
-library(Mfuzz)
-library(monocle)
-library(Biobase)
-library(clusterProfiler)  
-library(org.Mm.eg.db)     
-library(DOSE)     
-library(AnnotationDbi)
-library(ClusterGVis)
-```
-
-
-```{r}
-
-map = sample_data(ps_pro) %>% as.tibble()
-sample_data <- map %>%
-  mutate(Group = recode(Group,
-                        "W1" = "Control",
-                        "W2" = "Model",
-                        "W8" = "Low",
-                        "W9" = "Medium",
-                        "W10" = "High")) %>% as.data.frame() %>% column_to_rownames("ID")
-
-sample_data$ID =  row.names(sample_data)
-sample_data(ps_pro) = sample_data
-
-```
-
-
-```{r}
-
-tax = tax_table(ps_pro) %>% head() %>% as.data.frame()
-
-tax_table(ps_pro) %>%colnames()
-
-tax_table(ps_pro)%>%as.data.frame()%>%.$GO_annotation%>% head()
-tax_table(ps_pro)%>%as.data.frame()%>%.$pathway_annotation%>% head()
-tax_table(ps_pro)%>%as.data.frame()%>%.$Protein.Description%>% head()
-
-ps_pro1 = ps_pro %>% tax_glom_wt("Gene.Name") # GeneID
-
-
-dat <- ps_pro1 %>% 
-   # scale_micro()%>% 
-  psmelt() %>% 
-  dplyr::select(OTU, Sample, Abundance, Group) %>% 
-  dplyr::group_by(Group, OTU) %>% 
-  dplyr::summarise(mean = mean(Abundance), .groups = "drop") %>% 
-  pivot_wider(names_from = Group, values_from = mean) %>% as.data.frame()  %>%
-  column_to_rownames("OTU")
-
-head(dat)
-
-# dat =  dat[-1,]
-# row.names(dat) =  gsub("mmu:","",row.names(dat))  %>% as.numeric()
-
-getClusters(obj = dat)
-ck <- clusterData(obj = dat,
-                  cluster.method = "kmeans",
-                  cluster.num = 6)
-
-cm <- clusterData(obj = dat,
-                  cluster.method = "mfuzz",
-                  cluster.num = 6)
-str(cm)
-str(ck)
-
-ck$cluster.list
-
-visCluster(object = cm,
-           plot.type = "line")
-
-visCluster(object = ck,
-           plot.type = "line")
-
-group_col <- c("Control", "Model", "Low", "Medium", "High", "Control", "Model", "Low", "Medium", "High")
-
-# 为列标识创建颜色映射
-color_palette <- c("Control" = "#A0CE3A",
-                   "Model" = "#8DD3C7",
-                   "Low" = "#F2E27B",
-                   "Medium" = "#FCB461",
-                   "High" = "#D55E00")
-
-#ht.col = list(col_range = c(-2, 0, 2),col_color = c("#A555EC","#EEEEEE","#FF597B"))
-visCluster(object = ck,
-           plot.type = "both",
-           ggplot.panel.arg = c(4,1,24,"grey90",NA),
-           #column_split = group_col,
-           #ht.col = list(col_range = c(-2, 0, 2),col_color = c("#A555EC","#EEEEEE","#FF597B")),
-           ctAnno.col = ggsci::pal_npg()(7))
-
-enrich <- enrichCluster(object = cm,  # 使用转换后的基因符号列表
-                        OrgDb = org.Mm.eg.db,
-                        type = "BP",
-                        pvalueCutoff = 0.05,
-                        topn = 5)
-
-# enrich_res <- compareCluster(
-#   geneClusters = cm$cluster.list,  # 输入KO ID列表
-#   fun = "enrichKEGG",
-#   organism = "mmu",               # 小鼠KEGG代码
-#   keyType = "kegg",               # 指定输入为KO ID
-#   pvalueCutoff = 0.1
-# )
-
-
-visCluster(object = cm,
-           plot.type = "both",
-           column_names_rot = 45,
-           show_row_dend = F,
-           #markGenes = markGenes,
-          # markGenes.side = "left",
-           genes.gp = c('italic',fontsize = 12,col = "black"),
-           annoTerm.data = enrich,
-           line.side = "left",
-           go.col = rep(ggsci::pal_d3()(6),each = 5),
-           add.bar = T,
-          # go.size = "pval",
-           annoTerm.mside = "left")
-
-
-```
 
 ## fig.1g
 
@@ -441,8 +315,6 @@ p= heatmap+
                                override.aes = list(size = 3), 
                                order = 1),
          fill = guide_colorbar(title = "Pearson's r", order = 3))
-
-
 ```
 
 ## fig.1h
@@ -539,5 +411,6 @@ p= ggplot(data5, aes(x = Group, y = value)) +
 p
 
 ```
+
 
 
