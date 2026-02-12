@@ -1,0 +1,24 @@
+Group,Abundance,OTU,log,group2,group3
+Control,0.007033269,Lactobacillus johnsonii,-2.152225725,H,0
+Control,0.006811032,Lactobacillus johnsonii,-2.166149943,H,0
+Control,0.006624814,Lactobacillus johnsonii,-2.178171238,H,0
+Control,0.006578271,Lactobacillus johnsonii,-2.181228535,H,0
+Control,0.006390749,Lactobacillus johnsonii,-2.193769228,H,0
+Control,0.00620807,Lactobacillus johnsonii,-2.206344359,H,0
+High,0.142217948,Lactobacillus johnsonii,-1.378620168,DH,400
+High,0.129801641,Lactobacillus johnsonii,-1.392718171,DH,400
+High,0.128054741,Lactobacillus johnsonii,-1.410183311,DH,400
+High,0.116404981,Lactobacillus johnsonii,-1.473812857,DH,400
+High,0.115171268,Lactobacillus johnsonii,-1.500994838,DH,400
+High,0.114039806,Lactobacillus johnsonii,-1.592444835,DH,400
+Medium,0.041809596,Lactobacillus johnsonii,-0.847015057,DH,200
+Medium,0.040473852,Lactobacillus johnsonii,-0.886686361,DH,200
+Medium,0.038878097,Lactobacillus johnsonii,-0.892570425,DH,200
+Medium,0.033578232,Lactobacillus johnsonii,-0.933991128,DH,200
+Medium,0.031540421,Lactobacillus johnsonii,-0.938618146,DH,200
+Medium,0.025549665,Lactobacillus johnsonii,-0.942905448,DH,200
+Low,0.025511273,Lactobacillus johnsonii,-1.593097659,D,100
+Low,0.025144565,Lactobacillus johnsonii,-1.599383188,D,100
+Low,0.024636766,Lactobacillus johnsonii,-1.608240065,D,100
+Low,0.024193548,Lactobacillus johnsonii,-1.616120959,D,100
+Low,0.02323292,Lactobacillus johnsonii,-1.633709315,D,100

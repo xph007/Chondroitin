@@ -1,0 +1,230 @@
+---
+title: "fig.2"
+output: html_document
+date: "2026-02-11"
+author: "xph"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(scales)
+library(ggradar)
+library(ggplot2)
+library(RColorBrewer)
+library(phyloseq)
+library(ggClusterNet)
+library(EasyStat)
+library(tidyverse)
+library(readxl)
+
+```
+
+
+## fig.2c
+
+```{r}
+final_result= read.csv("./effect.csv")
+
+ggplot(final_result #%>% filter(sig!="")
+       , aes(estimate, Species)) +
+  geom_point(size = 1) +
+  geom_errorbarh(aes(xmax = estimate + se, xmin = estimate - se), size = 0.5, height = 0.2) +
+  theme(
+    axis.text.x = element_text(size = 24, color = "black"),
+    axis.text.y = element_text(size = 24, color = "black"),
+    title = element_text(size = 24)
+  ) +
+  theme_bw() +
+  geom_text(aes(label = sig),
+            nudge_x = 0.5,       
+            hjust = -0.2,       
+            size     = 4,         
+            colour   = "black",
+            vjust    = 0.5) +
+  geom_vline(aes(xintercept = 0), color = "gray", linetype = "dashed", size = 0.6) 
+
+
+```
+
+
+
+```{r}
+importance =  read.csv("./importance.csv") %>% 
+  filter(!str_detect(Species,"Unidentified"))    %>% 
+  filter(!str_detect(Species,"Unclassified"))    
+
+
+importance$Phylum = gsub("_D","",importance$Phylum)
+importance$Phylum = gsub("_A","",importance$Phylum)
+
+mycol3 <- rev(c('#FCCDE5',
+                '#B3DE69','#FDB462','#80B1D3','#FB8072',
+                '#BEBADA','#8DD3C7'))
+
+plot_4 <- ggplot(importance[1:10,], 
+                 aes(x = MeanDecreaseAccuracy, y = reorder(Species, MeanDecreaseAccuracy),
+                     fill = Phylum,color = Phylum)) +
+  geom_point(size=2.5,pch=21)+
+  geom_segment(aes(yend=Species),xend=0,size=2,show.legend = FALSE)+
+  scale_color_manual(values = mycol3)+
+  scale_fill_manual(values = mycol3)+
+  # theme_new+
+  # scale_x_continuous(limits = c(min(importance[50:1,]$MeanDecreaseAccuracy)*0.95,
+  #                               max(importance[50:1,]$MeanDecreaseAccuracy)*1.03),
+  #                    expand = c(0,0),breaks = seq(1.4,2.3,0.3))+
+  scale_y_discrete(position = "right")+
+  theme(legend.position = c(0.999,0.001),
+        legend.justification = c(1,0.01),
+        legend.text = element_text(size = 9,face = "plain"),
+        legend.title = element_text(size = 9.5,face = "bold"),
+        #legend.key.size = unit(0.2,"mm"),
+        legend.key.height = unit(5,"mm"),
+        legend.key.width = unit(1,"mm") ,
+        axis.text.y = element_text(size = 9,face = "plain"))+
+  labs(y="")+
+  guides(color = guide_legend(override.aes = list(size=3)))+
+  theme_bw()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+plot_4
+
+
+
+
+
+```
+
+
+
+```{r}
+
+long_data = read.csv("./dif_log.csv")
+top15_order <- importance[1:10, ]$Species
+
+p = ggplot(long_data, aes(x = log2FC, y = OTU, fill = Comparison)) +
+  geom_point(shape = 21,size = 3, alpha = 0.9,color = "black") +  # 调整点大小
+  geom_vline(xintercept = 1, linetype = "dashed",size = 0.5) +  # 绘制中线（log2FC=0）
+  scale_fill_manual(values = c("DH_vs_H" ='#FDB462', "DH_vs_D" = "#4DBBD5")) +  # 自定义颜色
+  labs(x = "log2 Fold Change", y = "", color = "Comparison") +
+  #theme_few() +
+  theme(
+   #  axis.text.y = element_text(face = "italic"),  # 菌名斜体显示（可选）
+    legend.position = "top"  # 图例放在顶部
+  ) +theme_bw() +
+  scale_y_discrete(limits = rev(top15_order))
+p
+
+
+p = ggplot(long_data, aes(x = log2FC, y = OTU, fill = Comparison, size = abs(log2FC))) +
+  geom_point(shape = 21, alpha = 0.9, color = "black") +  # 调整点大小
+  geom_vline(xintercept = 1, linetype = "dashed", size = 0.5) +  # 绘制中线（log2FC=0）
+  scale_fill_manual(values = c("DH_vs_H" = '#FDB462', "DH_vs_D" = "#4DBBD5")) +  # 自定义颜色
+  labs(x = "log2 Fold Change", y = "", color = "Comparison") +
+ # theme_few() +
+  theme(
+    legend.position = "top"  # 图例放在顶部
+  ) + theme_bw() +
+  scale_y_discrete(limits = rev(top15_order)) +
+  scale_size_continuous(range = c(1.5, 5))  # 设置点的大小范围
+p
+
+
+```
+
+## fig.2f
+
+```{r}
+dat2 =  read.csv("./ab_lac.csv")
+
+col = c("#A0CE3A" , "#8DD3C7", "#F2E27B", "#FCB461", "#D55E00")
+
+str(dat2)
+
+dat2$group3 = as.numeric(dat2$group3)
+
+
+
+p= ggplot(dat2%>% filter(Group != "Control"), aes(x = group3, y = Abundance, color = Group, size = Abundance)) + 
+   geom_jitter(alpha = 0.5)+
+  scale_size_continuous(range = c(3, 6), 
+                        breaks = c(0.01, 0.05),  
+                        labels = scales::comma_format()) +  # 格式化大小
+  scale_color_manual(values = c("Control" ="#A0CE3A", "Low"=  "#F2E27B", "Medium"=  "#FCB461" ,
+                                "High" = "#4DBBD5")) +  # 自定义颜色
+  labs(x = "Group 3", 
+       y = "Abundance", 
+       color = "Group") + 
+  theme_classic() + 
+  theme(legend.position = "top")+
+   geom_abline(intercept = 0, slope = 1, color = "black", linetype = 5) +  # 45度斜线
+   geom_smooth(method = "lm", se = TRUE, color = "black", show.legend = FALSE)+ 
+  #  geom_point(alpha = 0.2) +  # 添加点，透明度设为0.7
+  geom_jitter(alpha = 0.5) +  # 线性回归
+   ggpubr::stat_cor(aes(group= Group),method = "pearson", label.x = 0.5, label.y = 0.04, size = 5)
+
+p
+```
+
+
+## fig.2g
+
+```{r}
+library(ggraph)
+library(igraph)
+library(ggplot2)
+library(tidygraph)
+occor2= read.csv("./occor2.csv")
+occor2$X =NULL
+
+
+net <- graph_from_data_frame(d = occor2, directed = FALSE)
+
+# 转换为tidygraph，并设置节点属性
+tidy_net <- as_tbl_graph(net) %>%
+  activate(nodes) %>%
+  mutate(
+    type = ifelse(name == "Lactobacillus johnsonii", "Microbe", "Indicator"),
+    size = ifelse(type == "Microbe", 12, 8),  # 微生物节点更大
+    color = ifelse(type == "Microbe", "#A0CE3A", "#8DD3C7")  # 设置节点颜色
+  )
+
+# 使用 focus 布局，让微生物居中
+
+p= ggraph(tidy_net, layout = "focus", focus = which(V(tidy_net)$name == "Lactobacillus johnsonii")) +
+ 
+  geom_edge_arc(
+    aes(width = abs(r), color = ifelse(r > 0, "#E41A1C", "#377EB8")), 
+    alpha = 0.5,
+    show.legend = TRUE,
+    strength=0.3
+  ) +
+  # 绘制节点（无边框）
+  geom_node_point(aes( size = size,fill = color), shape = 21, color = "black") +
+  # 添加节点标签（无边框，直接显示文字）
+  geom_node_text(
+    aes(label = name), 
+    size = 3.5, 
+    repel = TRUE
+  )+
+  scale_edge_width(range = c(0.8, 2.5), name = "|r|") +
+  scale_edge_color_identity(name = "Correlation", labels = c("Negative", "Positive"), guide = "legend") +
+  scale_fill_identity() +
+  scale_size_identity() +
+  # 调整主题
+  theme_void() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    plot.subtitle = element_text(hjust = 0.5, size = 10),
+    legend.position = "bottom",
+    legend.box = "horizontal"
+  )
+p
+
+```
+
+

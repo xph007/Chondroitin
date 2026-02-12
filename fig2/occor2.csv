@@ -1,0 +1,10 @@
+"","from","to","r","p"
+"Weight","Lactobacillus johnsonii","Weight",0.0713043478260869,0.0740574687176794
+"Lean_meat_quality","Lactobacillus johnsonii","Lean_meat_quality",0.352173913043478,0.0104829943117294
+"Fat_mass","Lactobacillus johnsonii","Fat_mass",-0.307826086956522,0.0157363217067272
+"Moisture_content","Lactobacillus johnsonii","Moisture_content",-0.294782608695652,0.0169545972972212
+"Muscle_weight","Lactobacillus johnsonii","Muscle_weight",0.3,0.0165388938360012
+"Power_of_gripping","Lactobacillus johnsonii","Power_of_gripping",0.357391304347826,0.01023510278148
+"Running_distance","Lactobacillus johnsonii","Running_distance",0.391304347826087,0.00733055888208348
+"Swimming_speed","Lactobacillus johnsonii","Swimming_speed",0.224347826086956,0.0298557824262178
+"Myofascial_fusion","Lactobacillus johnsonii","Myofascial_fusion",0.350434782608696,0.0104829943117294

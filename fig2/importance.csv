@@ -1,0 +1,47 @@
+,Species,W1(importance),W2W1(importance),W8W1(importance),W9W1(importance),W10W1(importance),MeanDecreaseAccuracy,MeanDecreaseGini,Kingdom,Phylum,Class,Order,Family,Genus
+1,Lactobacillus johnsonii,1.002713709,1.002713709,1.348215706,2.165006368,0,2.34876803,0.094208494,D__Bacteria,Firmicutes_D,Bacilli,Lactobacillales,Lactobacillaceae,Lactobacillus
+2,Enterococcus_H_360604 faecalis,1.348215706,0,0,1.421920505,0,2.000380581,0.09994852,D__Bacteria,Firmicutes_D,Bacilli,Lactobacillales,Enterococcaceae,Enterococcus_H
+3,Akkermansia muciniphila_D,1.002713709,1.002713709,1.421920505,0,0,1.989908705,0.072912913,D__Bacteria,Verrucomicrobiota,Verrucomicrobiae,Verrucomicrobiales,Akkermansiaceae,Akkermansia
+4,Unclassified_Kurthia,0,1.421920505,0.447455529,1.348215706,1.421920505,1.96709451,0.089283569,D__Bacteria,Firmicutes_D,Bacilli,Bacillales_A,Planococcaceae,Kurthia
+5,Unidentified_UBA5905,0,1.348215706,1.421920505,0.447455529,1.679321872,1.961769285,0.086759487,D__Bacteria,Firmicutes_A,Clostridia,Oscillospirales,Acutalibacteraceae,UBA5905
+6,Unclassified_Faecalibaculum,0,1.746267605,1.002713709,1.421920505,0,1.954006203,0.071835732,D__Bacteria,Firmicutes_D,Bacilli,Erysipelotrichales,Erysipelotrichaceae,Faecalibaculum
+7,CAG-873 sp011959565,1.421920505,1.002713709,0,1.746267605,1.002713709,1.937254927,0.132252252,D__Bacteria,Bacteroidota,Bacteroidia,Bacteroidales,Muribaculaceae,CAG-873
+8,Enterenecus sp004560375,1.002713709,1.002713709,1.002713709,1.746267605,0,1.830077208,0.074010374,D__Bacteria,Firmicutes_A,Clostridia,Oscillospirales,Oscillospiraceae,Enterenecus
+9,CAG-95 sp009917455,1.002713709,1.002713709,1.348215706,1.002713709,1.002713709,1.81848894,0.073393393,D__Bacteria,Firmicutes_A,Clostridia,Lachnospirales,Lachnospiraceae,CAG-95
+11,Duncaniella muris,-1.002713709,1.002713709,0,1.421920505,1.002713709,1.740157772,0.077078897,D__Bacteria,Bacteroidota,Bacteroidia,Bacteroidales,Muribaculaceae,Duncaniella
+12,Unclassified_Bifidobacterium,0,1.348215706,1.421920505,1.002713709,1.002713709,1.740157772,0.064856675,D__Bacteria,Actinobacteriota,Actinomycetia,Actinomycetales,Bifidobacteriaceae,Bifidobacterium
+13,CAG-485 sp002493045,1.421920505,0,0,1.002713709,0,1.735858159,0.056756757,D__Bacteria,Bacteroidota,Bacteroidia,Bacteroidales,Muribaculaceae,CAG-485
+14,Unidentified_Turicibacter,0,0,1.421920505,1.002713709,0,1.729609674,0.16006435,D__Bacteria,Firmicutes_D,Bacilli,Haloplasmatales_A,Turicibacteraceae,Turicibacter
+15,1XD42-69 sp009911505,0,0,0,1.679321872,1.644891266,1.722141466,0.146172146,D__Bacteria,Firmicutes_A,Clostridia,Lachnospirales,Lachnospiraceae,1XD42-69
+16,Unclassified_Oscillospiraceae,0,0,0,1.002713709,1.348215706,1.722141466,0.040720721,D__Bacteria,Firmicutes_A,Clostridia,Oscillospirales,Oscillospiraceae,Unclassified_Oscillospiraceae
+17,Helicobacter_D ganmani,1.421920505,-1.002713709,0,0,1.679321872,1.69038942,0.072427752,D__Bacteria,Campylobacterota,Campylobacteria,Campylobacterales,Helicobacteraceae,Helicobacter_D
+18,Unclassified_Lachnospiraceae,1.421920505,0,1.002713709,0,1.002713709,1.686128595,0.120664561,D__Bacteria,Firmicutes_A,Clostridia,Lachnospirales,Lachnospiraceae,Unclassified_Lachnospiraceae
+19,Unclassified_Paramuribaculum,1.002713709,1.002713709,1.421920505,1.002713709,-0.447455529,1.686128595,0.122475332,D__Bacteria,Bacteroidota,Bacteroidia,Bacteroidales,Muribaculaceae,Paramuribaculum
+20,Unidentified_CAG-273,1.002713709,1.002713709,0,0,1.348215706,1.686128595,0.05045045,D__Bacteria,Firmicutes_A,Clostridia,TANB77,CAG-508,CAG-273
+21,Ventrimonas sp003611875,1.002713709,1.421920505,0,1.002713709,1.002713709,1.681692364,0.078163878,D__Bacteria,Firmicutes_A,Clostridia,Lachnospirales,Lachnospiraceae,Ventrimonas
+23,BX12 sp902363595,1.002713709,0,1.002713709,1.421920505,1.002713709,1.677084509,0.101261261,D__Bacteria,Firmicutes_A,Clostridia,Peptostreptococcales,Anaerovoracaceae,BX12
+26,Unidentified_Helicobacter_A,1.002713709,1.002713709,1.002713709,0,1.002713709,1.667421903,0.055319995,D__Bacteria,Campylobacterota,Campylobacteria,Campylobacterales,Helicobacteraceae,Helicobacter_A
+27,Dubosiella sp000403415,0,1.002713709,0,1.002713709,1.746267605,1.654303861,0.101999142,D__Bacteria,Firmicutes_D,Bacilli,Erysipelotrichales,Erysipelotrichaceae,Dubosiella
+28,UBA3263 sp001689615,1.002713709,1.421920505,0,1.002713709,1.002713709,1.643445941,0.08992629,D__Bacteria,Bacteroidota,Bacteroidia,Bacteroidales,Muribaculaceae,UBA3263
+29,Unclassified_Helicobacteraceae,1.002713709,1.348215706,1.421920505,-1.002713709,0,1.630206671,0.055855856,D__Bacteria,Campylobacterota,Campylobacteria,Campylobacterales,Helicobacteraceae,Unclassified_Helicobacteraceae
+30,Alistipes_A_871400 dispar,1.348215706,1.421920505,0,1.002713709,0,1.614179357,0.057657658,D__Bacteria,Bacteroidota,Bacteroidia,Bacteroidales,Rikenellaceae,Alistipes_A
+31,Faecousia sp000434635,0,1.348215706,1.002713709,0,1.002713709,1.59026724,0.053178893,D__Bacteria,Firmicutes_A,Clostridia,Oscillospirales,Oscillospiraceae,Faecousia
+32,Jeotgalicoccus_A_310962 aerolatus,1.421920505,1.746267605,0,0,0,1.582398646,0.055873016,D__Bacteria,Firmicutes_D,Bacilli,Staphylococcales,Salinicoccaceae,Jeotgalicoccus_A
+33,CAG-83 sp900545585,0,1.002713709,0,0,1.002713709,1.421920505,0.072844273,D__Bacteria,Firmicutes_A,Clostridia,Oscillospirales,Oscillospiraceae,CAG-83
+34,Muribaculum intestinale,1.002713709,1.002713709,1.002713709,1.002713709,0,1.421920505,0.073350883,D__Bacteria,Bacteroidota,Bacteroidia,Bacteroidales,Muribaculaceae,Muribaculum
+35,Paramuribaculum sp900551515,1.002713709,1.002713709,0,1.002713709,-1.002713709,1.421920505,0.046642097,D__Bacteria,Bacteroidota,Bacteroidia,Bacteroidales,Muribaculaceae,Paramuribaculum
+36,UBA9715 sp902781245,0,1.002713709,1.002713709,0,0,1.421920505,0.022222222,D__Bacteria,Actinobacteriota,Coriobacteriia,Coriobacteriales,Eggerthellaceae,UBA9715
+37,Unclassified_Bacteria,1.002713709,1.421920505,0,0,0,1.421920505,0.047563278,D__Bacteria,Unclassified_Bacteria,Unclassified_Bacteria,Unclassified_Bacteria,Unclassified_Bacteria,Unclassified_Bacteria
+38,Unclassified_Atopobiaceae,1.002713709,0,1.002713709,0,0,1.417686648,0.04024024,D__Bacteria,Actinobacteriota,Coriobacteriia,Coriobacteriales,Atopobiaceae,Unclassified_Atopobiaceae
+39,Eubacterium_F sp000687695,1.421920505,1.002713709,0,1.002713709,1.002713709,1.416017548,0.102599743,D__Bacteria,Firmicutes_A,Clostridia,Lachnospirales,Lachnospiraceae,Eubacterium_F
+40,Paramuribaculum intestinale,1.421920505,0,1.002713709,1.002713709,0,1.416017548,0.045285285,D__Bacteria,Bacteroidota,Bacteroidia,Bacteroidales,Muribaculaceae,Paramuribaculum
+41,Unclassified_C-53,1.421920505,0,-1.002713709,1.421920505,1.002713709,1.416017548,0.095850396,D__Bacteria,Firmicutes_A,Clostridia,Lachnospirales,Lachnospiraceae,C-53
+42,Unidentified_Eubacterium_N,1.421920505,0,0,0,0,1.416017548,0.043865684,D__Bacteria,Firmicutes_A,Clostridia,Peptostreptococcales,Anaerovoracaceae,Eubacterium_N
+43,Alistipes_A_871400 sp002362235,1.002713709,0,1.002713709,1.002713709,1.002713709,1.413129494,0.061513982,D__Bacteria,Bacteroidota,Bacteroidia,Bacteroidales,Rikenellaceae,Alistipes_A
+44,CAG-485 sp002362485,0,1.002713709,0,1.002713709,0,1.413129494,0.07027027,D__Bacteria,Bacteroidota,Bacteroidia,Bacteroidales,Muribaculaceae,CAG-485
+45,COE1 sp000403335,0,1.002713709,1.002713709,0,0,1.413129494,0.054182754,D__Bacteria,Firmicutes_A,Clostridia,Lachnospirales,Lachnospiraceae,COE1
+46,Lactobacillus intestinalis,1.002713709,1.421920505,1.002713709,0,0,1.413129494,0.068777349,D__Bacteria,Firmicutes_D,Bacilli,Lactobacillales,Lactobacillaceae,Lactobacillus
+47,Ruminiclostridium_E siraeum,1.002713709,0,0,1.421920505,0,1.413129494,0.125752896,D__Bacteria,Firmicutes_A,Clostridia,Oscillospirales,Ruminococcaceae,Ruminiclostridium_E
+48,Unclassified_Limosilactobacillus,1.002713709,1.421920505,0,1.002713709,0,1.413129494,0.056061776,D__Bacteria,Firmicutes_D,Bacilli,Lactobacillales,Lactobacillaceae,Limosilactobacillus
+49,Turicimonas muris,0,1.002713709,0,0,1.002713709,1.40747567,0.048481338,D__Bacteria,Proteobacteria,Gammaproteobacteria,Burkholderiales,Burkholderiaceae_A,Turicimonas
+50,Unidentified_QWKK01,1.421920505,1.002713709,0.447455529,0,1.002713709,1.394014817,0.046126126,D__Bacteria,Actinobacteriota,Coriobacteriia,Coriobacteriales,Eggerthellaceae,QWKK01
