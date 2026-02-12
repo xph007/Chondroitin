@@ -10,22 +10,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## fig.3B
-```{r}
-library(dplyr)
-library(tidyr)
-library(scales)
-library(ggradar)
-library(ggplot2)
-library(RColorBrewer)
-library(phyloseq)
-library(ggClusterNet)
-library(EasyStat)
-library(tidyverse)
-library(readxl)
-```
 
 ```{r}
-data =  read.csv("./data//fig.3b.csv")
+
+data =  read.csv("./fig.3b.csv")
 
 summary_data <- data %>%
   group_by(time, group) %>%
@@ -145,7 +133,7 @@ aovMuiBarPlot3 = function (data = data_wt, i = 3, sig_show = "line", result = re
 
 
 ```{r}
-dat =  read.csv("./data/fig.3c.CSV")
+dat =  read.csv("./fig.3c.CSV")
 
 head(dat)
 
@@ -179,7 +167,7 @@ PlotresultBar = aovMuiBarPlot3(data = dat, i= 3,sig_show ="abc",result = res[[1]
 
 ```{r}
 
- adhesion_data = read.csv("./data/adhesion_data.csv")
+ adhesion_data = read.csv("./adhesion_data.csv")
 # Calculate summary statistics
  summary_adhesion <- adhesion_data %>%
    group_by(time, group) %>%
@@ -233,5 +221,4 @@ p
 
 
 ```
-
 
