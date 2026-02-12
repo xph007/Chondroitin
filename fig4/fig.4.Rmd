@@ -10,22 +10,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## fig.4b
-```{r}
-library(dplyr)
-library(tidyr)
-library(scales)
-library(ggradar)
-library(ggplot2)
-library(RColorBrewer)
-library(phyloseq)
-library(ggClusterNet)
-library(EasyStat)
-library(tidyverse)
-library(readxl)
-```
 
 ```{r}
-ps_ms =  readRDS("./data/ps_metabolism.rds") %>% subset_taxa(KEGG!= "-")%>% subset_taxa(HMDB!= "-")%>%  
+ps_ms =  readRDS("./ps_metabolism.rds") %>% subset_taxa(KEGG!= "-")%>% subset_taxa(HMDB!= "-")%>%  
   subset_taxa(物质一级分类!= "其他") 
 
 ps_ms2 = ps_ms  %>% subset_taxa(KEGG!= "-") %>% subset_taxa(HMDB!= "-") %>%  
@@ -81,38 +68,6 @@ p
 ## fig.4c
 
 ```{r}
-#
-# j = "Phylum"
-# j = "Class"
-# j = "Order"
-# j =  "Family"
-# j = "Genus"
-# 
-# otu =NULL
-# tax = NULL
-# map = NULL
-# ps = ps1
-# 
-# group = "Group"
-# axis_ord = NULL
-# label = FALSE
-# sd = FALSE
-# Top = 10
-# 
-# tran = TRUE
-
-# library(phyloseq)
-# library(tidyverse)
-# library(vegan)
-# library(reshape2)
-# library("plyr")
-library(ggalluvial)
-# detach("package:ggalluvial")
-# detach("package:plyr")
-# detach("package:reshape2")
-# library(ggplot2)
-
-
 
 barMainplot = function(otu = NULL,tax = NULL,map = NULL,tree = NULL ,ps = NULL,group  = "Group",
                        j = "Phylum",axis_ord = NULL,label = TRUE ,sd = FALSE,Top = 10,tran = TRUE){
@@ -346,37 +301,6 @@ barMainplot = function(otu = NULL,tax = NULL,map = NULL,tree = NULL ,ps = NULL,g
 
 
 
-# 
-# tax_glom_wt <- function(ps = ps,ranks = "Phylum") {
-#   
-#   
-#   otu <- as.data.frame(t(vegan_otu(ps)))
-#   tax <- as.data.frame(vegan_tax(ps))
-#   
-#   # building group
-#   tax[[ranks]][is.na(tax[[ranks]])] = "Unknown"
-#   tax[[ranks]][tax[[ranks]] == ""] = "Unknown"
-#   split <- split(otu,tax[[ranks]])
-#   #calculate sum by group
-#   apply <- lapply(split,function(x)colSums(x[]))
-#   # result chack
-#   otucon <- do.call(rbind,apply)
-#   
-#   taxcon <- tax[1:match(ranks,colnames(tax))]
-#   taxcon <- taxcon[!duplicated(tax[[ranks]]),]
-#   #-tax name with NA wound be repeated with unknown
-#   taxcon[[ranks]][is.na(taxcon[[ranks]])] = "unknown"
-#   row.names(taxcon) <- taxcon[[ranks]]
-#   
-#   
-#   pscon <- phyloseq(
-#     otu_table( as.matrix(otucon),taxa_are_rows = TRUE),
-#     tax_table(as.matrix(taxcon)),
-#     sample_data(ps)
-#   )
-#   return(pscon)
-# }
-# 
 
 ```
 
@@ -436,12 +360,8 @@ tax_table(ps_ms2)%>% as.data.frame()%>% .$Class.I %>% unique()
 
 tax = tax_table(ps_ms2)%>% as.data.frame()
 
-id =  c("Sugars")
 
-i=1
-for(i in 1:length(id) ){
-  
-  ps3 <-  ps_ms %>% scale_micro()  %>%  subset_taxa(Class==id[i] ) 
+  ps3 <-  ps_ms %>% scale_micro()  %>%  subset_taxa(Class=="Sugars" ) 
   
   expr_matrix =  otu_table(ps3  )  %>% as.data.frame()
   
@@ -534,7 +454,7 @@ library(ggradar)
 library(readxl)
 library(tidyverse)
 library(patchwork)
-dat =  read.csv("./data/ms_val.CSV")
+dat =  read.csv("./ms_val.CSV")
 
 names(dat) <- gsub(" ", "_", names(dat))
 
@@ -740,5 +660,4 @@ p=PlotresultBar[[1]]+
 p 
 
 ```
-
 
