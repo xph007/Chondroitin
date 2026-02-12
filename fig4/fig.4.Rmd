@@ -10,6 +10,19 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## fig.4b
+```{r}
+library(dplyr)
+library(tidyr)
+library(scales)
+library(ggradar)
+library(ggplot2)
+library(RColorBrewer)
+library(phyloseq)
+library(ggClusterNet)
+library(EasyStat)
+library(tidyverse)
+library(readxl)
+```
 
 ```{r}
 ps_ms =  readRDS("./data/ps_metabolism.rds") %>% subset_taxa(KEGG!= "-")%>% subset_taxa(HMDB!= "-")%>%  
@@ -727,4 +740,5 @@ p=PlotresultBar[[1]]+
 p 
 
 ```
+
 
