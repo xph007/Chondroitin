@@ -10,9 +10,21 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## fig.3B
+```{r}
+library(dplyr)
+library(tidyr)
+library(scales)
+library(ggradar)
+library(ggplot2)
+library(RColorBrewer)
+library(phyloseq)
+library(ggClusterNet)
+library(EasyStat)
+library(tidyverse)
+library(readxl)
+```
 
 ```{r}
-
 data =  read.csv("./data//fig.3b.csv")
 
 summary_data <- data %>%
@@ -221,4 +233,5 @@ p
 
 
 ```
+
 
