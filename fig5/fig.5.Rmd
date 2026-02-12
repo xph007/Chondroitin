@@ -1,0 +1,603 @@
+---
+title: "fig.5"
+author: "xph"
+date: "2026-02-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## fig.5a
+```{r}
+library(dplyr)
+library(tidyr)
+library(scales)
+library(ggradar)
+library(ggplot2)
+library(RColorBrewer)
+library(phyloseq)
+library(ggClusterNet)
+library(EasyStat)
+library(tidyverse)
+library(readxl)
+```
+
+
+```{r}
+aovMuiBarPlot2 = function (data = data_wt, i = 3, sig_show = "line", result = result, 
+                           ns = FALSE) 
+{
+  name_i = colnames(data[i])
+  wen1 = as.data.frame(tapply(as.vector(as.matrix(data[i])), 
+                              data$group, mean, na.rm = TRUE))
+  
+  wen2 = as.data.frame(tapply(as.vector(as.matrix(data[i])), 
+                              data$group, sd, na.rm = TRUE))
+  went = cbind(wen1, wen2)
+  colnames(went) = c("mean", "SD")
+  aa = result %>% merge(data_complete_no_NA %>% select(group,Type), by = "group"  )
+  
+  wentao = merge(aa, went %>%  rownames_to_column("group"), by = "group", all =F)
+  aa
+  aa = mutate(wentao, ymin = mean - SD, ymax = mean + SD)
+  a = max(aa$ymax) * 1.2
+  aa
+  p = ggplot(aa, aes(x = group, y = mean, colour = group)) +
+    geom_bar(aes( fill = Type), stat = "identity", 
+             width = 0.5, 
+             position = position_dodge(width = 0.3),
+             colour = "black") + geom_errorbar(aes(ymin = ymin, 
+                                                   ymax = ymax
+             ),position = position_dodge(width = 0.3), colour = "black",
+             width = 0.15, size =0.75) + 
+    scale_y_continuous(expand = c(0, 0), limits = c(0, a)) + 
+    labs(y = name_i)
+  #  geom_point(color = "black",shape =  21)
+  p
+  
+  line = list()
+  if (sig_show == "line") {
+    zuhe = combn(aa$group, 2)
+    xxxx <- tapply(zuhe, rep(1:ncol(zuhe), each = nrow(zuhe)), 
+                   function(i) i)
+    xxxx
+    sig_lis = rep("a", dim(zuhe)[2])
+    for (i in 1:dim(zuhe)[2]) {
+      if (filter(aa, group == xxxx[[i]][1])$groups == filter(aa, 
+                                                             group == xxxx[[i]][2])$groups) {
+        sig_lis[i] = "no_sig"
+      }
+      if (filter(aa, group == xxxx[[i]][1])$groups != filter(aa, 
+                                                             group == xxxx[[i]][2])$groups) {
+        sig_lis[i] = "*"
+      }
+    }
+    if (ns == TRUE) {
+      xxxx[as.character((1:length(sig_lis))[sig_lis == 
+                                              "no_sig"])] = NULL
+      sig_lis = sig_lis[sig_lis != "no_sig"]
+    }
+    line = list(comparisons = xxxx, annotations = sig_lis, 
+                y_position = (seq(from = 1, to = max(aa$mean)/4, 
+                                  length.out = dim(zuhe)[2]) + max(aa$mean)), tip_length = rep(0.03, 
+                                                                                               dim(zuhe)[2]))
+    p = p + ggsignif::geom_signif(comparisons = xxxx, annotations = sig_lis, 
+                                  y_position = (seq(from = 1, to = max(aa$mean)/4, 
+                                                    length.out = dim(zuhe)[2]) + max(aa$mean)), tip_length = rep(0.03, 
+                                                                                                                 dim(zuhe)[2]), color = "black")
+    p
+  }
+  if (sig_show == "abc") {
+    p = p + geom_text(aes(label = groups, y = ymax, x = group, 
+                          vjust = -0.3, size = 6),color =  "black")
+    p
+  }
+  p
+  if (length(unique(data$group)) > 3) {
+    p = p + theme(axis.text.x = element_text(angle = 45, 
+                                             vjust = 1, hjust = 1))
+  }
+  return(list(p, wentao, aa, line))
+}
+
+```
+
+
+
+```{r}
+data_complete_no_NA = read.csv("./complete_experimental_data.csv")
+
+data_complete_no_NA$group = as.factor(data_complete_no_NA$group)
+
+for (i in 6:ncol(data_complete_no_NA)) {
+  res = aovMcomper(data = data_complete_no_NA, i=i, method_Mc = "LSD")
+  
+  
+  PlotresultBar = aovMuiBarPlot2(data = data_complete_no_NA, i=i,sig_show ="abc",result = res[[1]])
+  
+  p = PlotresultBar[[1]]+
+    # scale_fill_npg()+
+    #scale_color_npg()+
+    theme_classic()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())+
+    theme(axis.text.x= element_text(size=13),
+          axis.text.y= element_text(size=12))+
+    theme(axis.text.x=element_text(angle=30,hjust = 1,vjust = 1,colour = "black"),
+          axis.text.y =element_text(colour = "black"))+
+    scale_fill_manual(values =c( "#8DD3C7", "#F2E27B"))+
+    scale_x_discrete(limits= data_complete$Treatment %>% unique())
+  
+  mean_value <- mean(PlotresultBar[[2]]$mean)
+  
+  p + geom_hline(
+    yintercept = mean_value,  # 均值位置
+    color = "red",            # 线条颜色
+    linetype = "dashed",      # 虚线类型
+    linewidth = 1             # 线宽
+  )+
+    annotate(
+      "text",
+      x = Inf, y = mean_value,
+      label = paste("Mean =", format(mean_value, scientific = F, digits = 3)),  # 科学计数法
+      hjust = 1.1, vjust = -0.5,
+      color = "red"
+    )
+
+  
+}
+p
+
+```
+
+
+## fig.5b
+
+```{r}
+library(cols4all)
+library(jsonlite)
+library(networkD3)
+
+data <- read_excel("./sugar_acid.xlsx",sheet = 1)
+
+long_data <- pivot_longer(
+  data,
+  cols = c(2:ncol(data)),  # 需要转换的列
+  names_to = "ID",       # 新列名（存储原列名）
+  values_to = "abundance"          # 新列名（存储数值）
+)
+
+data2 <- read_excel("./sugar_acid.xlsx",sheet = 2) %>% filter(from =="H")
+
+long_data2 =  filter(long_data , ID %in% data2$ID) %>% filter ( abundance != "N/A" )
+long_data$ID
+#long_data2$abundance =  as.numeric(long_data2$abundance) 
+
+long_data2$ID <- gsub("\\d+$", "", long_data2$ID)  
+
+long_data2$ID
+# 按 ID 和 Index 分组，计算 abundance 的均值
+mean_data <- long_data2 %>%
+  group_by(ID,Index) %>%
+  dplyr::summarise(
+    mean_abundance = mean(abundance, na.rm = TRUE),  # 计算均值，忽略 NA
+    .groups = "drop"  
+  )
+
+mean_data2 =  mean_data 
+
+
+df1 <- data.frame(
+  ID = c("CH" , "GH" , "M2H", "MH" , "TH"),
+  mean_abundance = rep(500, 5)
+)
+
+
+df2 =  mean_data2
+
+all_index <- df2$Index %>% unique() %>% as.character()
+
+
+nodes <- data.frame(name = c(as.character(df1$ID), all_index), stringsAsFactors = FALSE)
+
+
+# 计算每个 ID-Index 分流流量
+df2 <- df2 %>%
+  left_join(df1, by = "ID", suffix = c("_index", "_ID")) %>%
+  group_by(ID) %>%
+  mutate(prop = mean_abundance_index / sum(mean_abundance_index),
+         value = prop * mean_abundance_ID) %>%
+  ungroup()
+
+
+links <- df2 %>%
+  mutate(
+    source = match(ID, nodes$name) - 1,
+    target = match(Index, nodes$name) - 1
+  ) %>%
+  dplyr:: select(source, target, value)
+
+# networkD3 绘图
+sankeyNetwork(
+  Links = links,
+  Nodes = nodes,
+  Source = "source",
+  Target = "target",
+  Value = "value",
+  NodeID = "name",
+  nodePadding = 30,
+  units = "Abundance"
+)
+
+
+
+```
+
+
+## fig.5e
+
+
+
+```{r}
+
+library(ggradar)
+library(scales)
+library(patchwork)
+dat =  read.csv("./SW_PHY.CSV")
+
+names(dat) <- gsub(" ", "_", names(dat))
+
+raw_data = dat
+
+colnames(raw_data) <- trimws(colnames(raw_data))
+dput(names(raw_data))
+
+facettest<- raw_data %>%  as.data.frame() %>%
+  dplyr::group_by(Group) %>% 
+  dplyr::summarise(dplyr::across(.cols =where(is.numeric) ,mean, .names = "{.col}"))%>% 
+  as.data.frame()
+
+facettest_transposed <- as.data.frame(facettest)
+rownames(facettest_transposed) <- facettest_transposed$Group
+facettest_transposed$Group <- NULL  # 移除原来的Group列
+
+# 转置数据
+facettest_transposed <- as.data.frame(t(facettest_transposed))
+
+# 查看转置后的数据
+facettest_transposed$group =  row.names(facettest_transposed)
+
+facettest = facettest_transposed %>% select(group,Control, Model, FMT,Sig, DCS )
+
+
+row.names(facettest) = NULL
+
+str(facettest)
+
+
+color_palette <- c(
+  #"Weight"="#78A8C6",
+                   "Lean_meat_quality"="#BEBADA",
+                  # "Fat_mass"="#8DD3C7",
+                  #  "Moisture_content"="#F37D74",
+                   "Muscle_weight"="#BEE0BE",
+                   "Power_of_gripping"="#F5C2D9",
+                   "Running_distance"="#A0CE3A",
+                   "Swimming_speed"="#9D9E98",
+                   "Myofascial_fusion"="#F2E27B"
+                   # "Seawater prophageARGs"="#F2E27B",
+                   # "Plant prophageARGs"="#FCB461"
+)
+
+
+plots <- lapply(unique(facettest$group), function(g) {
+  
+  data_subset <- facettest%>%
+    #mutate(across(where(is.numeric), scales::rescale)) %>% 
+    filter(group == g)  # 筛选对应组的数据
+  
+  ggradar(data_subset, 
+          group.line.width = 1,      # 线宽
+          group.point.size = 1,      # 去掉数据点（设为0）
+          grid.label.size = 0,       # 网格标签字体大小
+          axis.label.size = 3,       # 轴标签字体大小
+          axis.line.colour = "grey", # 轴线颜色
+          background.circle.colour = "white", # 背景颜色
+          legend.text.size = 10,     # 图例字体大小
+          gridline.min.linetype = "longdash", # 最小网格线
+          gridline.mid.linetype = "longdash", # 中间网格线
+          gridline.max.linetype = "longdash", # 最大网格线
+          gridline.min.colour = "grey",
+          gridline.mid.colour = "#007A87",
+          gridline.max.colour = "black",
+          fill = TRUE,               # 启用填充
+          fill.alpha = 0.4)+
+    ggtitle(g) + # 每张图的标题为 group 名称
+    coord_cartesian(clip="off") +
+    scale_fill_manual(values = color_palette[g]) +
+    scale_color_manual(values = color_palette[g]) +
+    theme(plot.title = element_text(size = 10,vjust=0.5,hjust=0.5,
+                                    face="bold",color="black"))
+  
+  
+  
+})
+
+
+# 使用 patchwork 拼接多个雷达图
+final_plot <- wrap_plots(plots, ncol = 4)  # 设定每行 4个图
+print(final_plot)
+
+```
+
+## fig.5j
+
+```{r}
+
+# 加载必要的包
+library(tidyverse)
+library(ggpubr)
+library(emmeans)
+library(multcomp )
+library(ggtext)
+
+dat =  read.csv("./pcr.CSV") [,-4]
+
+head(dat)
+
+dat_long <- dat |> filter(!ID %in% c("NR","NAD")) %>%
+  pivot_longer(
+    cols = c(Control, Model, L.Johnsonin),  
+    names_to = "treatment",
+    values_to = "value"
+  ) |>
+  mutate(
+    treatment = factor(treatment, levels = c("Control", "Model", "L.Johnsonin")),
+    ID = factor(ID)
+  )
+
+# 多重比较标注
+emm <- emmeans::emmeans(
+  lm(value ~ ID * treatment, data = dat_long),
+  ~ treatment | ID
+)
+
+cld_df <- cld(emm, Letters = letters) |>
+  as_tibble() |>
+  rename(group = .group) |>
+  mutate(group = str_trim(group))
+cld_df <- cld_df %>%
+  mutate(group = recode(group, "a" = "c", "c" = "a"))
+
+# 添加均值/SE
+summary_df <- dat_long |>
+  group_by(ID, treatment) |>
+  summarise(
+    mean = mean(value, na.rm = TRUE),
+    se = sd(value, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  left_join(cld_df, by = c("ID", "treatment")) |>
+  arrange(ID, treatment)
+
+
+
+
+summary_df <- summary_df |>
+  arrange(ID, treatment) |>
+  mutate(group3 = row_number())
+
+# 获取每个变量的 group3 范围用于背景扇形
+bg_df <- summary_df |>
+  group_by(ID) |>
+  summarise(
+    xmin = min(group3) - 0.5,
+    xmax = max(group3) + 0.5,
+    .groups = "drop"
+  ) |>
+  mutate(
+    ymin = -3,
+    ymax = max(summary_df$mean + summary_df$se, na.rm = TRUE) + 2
+  )
+
+# 外圈变量名角度对齐
+label_df <- summary_df |>
+  filter(treatment == levels(summary_df$treatment)[1]) |>
+  dplyr::select(ID, group3) |>
+  mutate(
+    angle = 90 - 360 * (group3 - 0.5) / nrow(summary_df),
+    hjust = ifelse(angle < -90, 1, 0),
+    angle = ifelse(angle < -90, angle + 180, angle)
+  )
+
+# 主图
+p= ggplot() +
+  # 灰色背景色块（每个 ID 一块）
+  geom_rect(
+    data = bg_df,
+    aes(xmin = xmin, xmax = xmax, ymin = 0, ymax = 4 ,fill = ID),
+    color = "grey80",
+    alpha = 0.1
+  ) +
+  ggnewscale::new_scale_fill() + 
+  
+  # 误差线
+  geom_errorbar(
+    data = summary_df,
+    aes(
+      x = factor(group3),
+      ymin = mean - se,
+      ymax = mean + se
+    ),
+    width = 0.2,
+    position = position_dodge(width = 0.8)
+  )  +
+  # 柱状图
+  geom_col(
+    data = summary_df,
+    aes(x = factor(group3), y = mean, fill = treatment),
+    width = 0.7,
+    color = "black",
+    position = position_dodge(width = 0.8)
+  ) +geom_text(
+    data = summary_df,
+    aes(
+      x = factor(group3),
+      y = mean + se + 0.5,
+      label = group
+    ),
+    size = 3,
+    position = position_dodge(width = 0.8)
+   ) +
+  # 
+  # 外圈标签
+  geom_text(
+    data = label_df,
+    aes(
+      x = group3,
+      y = max(summary_df$mean + summary_df$se) + 1,
+      label = ID,
+      angle = angle,
+      hjust = hjust
+    ),
+    size = 4
+  ) +
+  coord_polar(theta = "x") +
+  ylim(-3, NA) + 
+  scale_fill_manual(
+    values = c(
+      "Control" = "#A0CE3A",
+      "Model" = "#FDBF6F",
+     # "FMT" = ,
+      "L.Johnsonin" = "#A6CEE3"
+    )
+  ) +
+  theme_void() +
+  theme(
+    legend.title = element_blank(),
+    legend.position = "right"
+  )
+p
+
+
+```
+
+
+
+
+## fig.5h
+
+```{r}
+aovMuiBarPlot1= function (data = data_wt, i = 3, sig_show = "line", result = result, 
+          ns = FALSE) 
+{
+  name_i = colnames(data[i])
+  wen1 = as.data.frame(tapply(as.vector(as.matrix(data[i])), 
+                              data$group, mean, na.rm = TRUE))
+  wen2 = as.data.frame(tapply(as.vector(as.matrix(data[i])), 
+                              data$group, sd, na.rm = TRUE))
+  went = cbind(wen1, wen2)
+  colnames(went) = c("mean", "SD")
+  aa = result
+  wentao = merge(aa, went, by = "row.names", all = F)
+  aa = mutate(wentao, ymin = mean - SD, ymax = mean + SD)
+  a = max(aa$ymax) * 1.2
+  p = ggplot(aa, aes(x = group, y = mean, colour = group)) + 
+    geom_bar(aes( fill = group), stat = "identity", 
+             width = 0.4, 
+             position = position_dodge(width = 0.3),
+             colour = "black") + geom_errorbar(aes(ymin = ymin, 
+                                                ymax = ymax
+                                                ),position = position_dodge(width = 0.3), colour = "black",
+                                                                  width = 0.15, size =0.75) + 
+    scale_y_continuous(expand = c(0, 0), limits = c(0, a)) + 
+    labs(y = name_i)
+  line = list()
+  if (sig_show == "line") {
+    zuhe = combn(aa$group, 2)
+    xxxx <- tapply(zuhe, rep(1:ncol(zuhe), each = nrow(zuhe)), 
+                   function(i) i)
+    xxxx
+    sig_lis = rep("a", dim(zuhe)[2])
+    for (i in 1:dim(zuhe)[2]) {
+      if (filter(aa, group == xxxx[[i]][1])$groups == filter(aa, 
+                                                             group == xxxx[[i]][2])$groups) {
+        sig_lis[i] = "no_sig"
+      }
+      if (filter(aa, group == xxxx[[i]][1])$groups != filter(aa, 
+                                                             group == xxxx[[i]][2])$groups) {
+        sig_lis[i] = "*"
+      }
+    }
+    if (ns == TRUE) {
+      xxxx[as.character((1:length(sig_lis))[sig_lis == 
+                                              "no_sig"])] = NULL
+      sig_lis = sig_lis[sig_lis != "no_sig"]
+    }
+    line = list(comparisons = xxxx, annotations = sig_lis, 
+                y_position = (seq(from = 1, to = max(aa$mean)/4, 
+                                  length.out = dim(zuhe)[2]) + max(aa$mean)), tip_length = rep(0.03, 
+                                                                                               dim(zuhe)[2]))
+    p = p + ggsignif::geom_signif(comparisons = xxxx, annotations = sig_lis, 
+                                  y_position = (seq(from = 1, to = max(aa$mean)/4, 
+                                                    length.out = dim(zuhe)[2]) + max(aa$mean)), tip_length = rep(0.03, 
+                                                                                                                 dim(zuhe)[2]), color = "black")
+    p
+  }
+  if (sig_show == "abc") {
+    p = p + geom_text(aes(label = groups, y = ymax, x = group, 
+                          vjust = -0.3, size = 6),color =  "black")
+    p
+  }
+  p
+  if (length(unique(data$group)) > 3) {
+    p = p + theme(axis.text.x = element_text(angle = 45, 
+                                             vjust = 1, hjust = 1))
+  }
+  return(list(p, wentao, aa, line))
+}
+
+```
+
+
+
+```{r}
+dat2=  read.csv("./dif_pro.csv")
+
+id3 = dat2$Gene.Name %>% unique()
+dat2$X = NULL
+
+i =1
+for ( i in 1:length(id3)) {
+  res = aovMcomper(data = dat2 %>% filter(Gene.Name==id3[i]), i=3, method_Mc = "LSD")
+  
+  res[[1]]
+  
+  PlotresultBar = aovMuiBarPlot1(data = dat2 %>% filter(Gene.Name==id3[i]), i= 3,sig_show ="abc",result = res[[1]])
+  
+  PlotresultBar[[1]]
+  
+
+  
+  p = PlotresultBar[[1]]+
+    # scale_fill_npg()+
+    #scale_color_npg()+
+    theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())+
+    theme(axis.text.x= element_text(size=13),
+          axis.text.y= element_text(size=13))+
+    theme(axis.text.x=element_text(angle=30,hjust = 1,vjust = 1,colour = "black"),
+          axis.text.y =element_text(colour = "black"))+
+    scale_fill_manual(values =c("#A0CE3A" ,"#D55E00", "#8DD3C7") )+
+    labs(title = id3[i])
+  p
+  
+  
+  
+}
+```
+
+
